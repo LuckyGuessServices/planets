@@ -1,4 +1,4 @@
 
-# lug-planets
+# LuG planets
 
 * [TODO](docs/todo.md)
