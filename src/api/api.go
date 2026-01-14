@@ -2,8 +2,8 @@ package api
 
 import (
 	"LuG/planets/api/endpoints"
+	"LuG/planets/general/luglog"
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -54,5 +54,5 @@ func writeResponse(responseData []byte, w http.ResponseWriter, r *http.Request) 
 }
 
 func logHandlerError(err error, errPrefix string) {
-	log.Print(errPrefix+" ---> ", err)
+	luglog.Print(errPrefix+" ---> ", err)
 }

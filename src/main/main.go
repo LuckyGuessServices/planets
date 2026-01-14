@@ -1,14 +1,12 @@
 package main
 
 import (
-	"LuG/planets/api"
-	"log"
-	"net/http"
+	"LuG/planets/general/lugserver"
+	"LuG/planets/general/shutdown_cleanup"
 )
 
 func main() {
-	log.Fatal(
-		"\"main\" package, web server start-up failed --> ",
-		http.ListenAndServe(":8080", api.Router()),
-	)
+	defer shutdown_cleanup.ExecuteStack()
+
+	lugserver.Serve()
 }

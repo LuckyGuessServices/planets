@@ -34,8 +34,8 @@ func TestIndex(t *testing.T) {
 		}
 
 		bodyMapExpected := map[string]any{
-			"service_name":              "LuG planets",
-			"service_current_date_time": "2000-01-01T00:00:00+00:00",
+			"service_name":         "LuG planets",
+			"service_current_time": "2000-01-01T00:00:00+00:00",
 		}
 		if diff := cmp.Diff(bodyMapExpected, bodyMapActual); diff != "" {
 			t.Errorf("JSON responses differ (-expected +actual):\n%s", diff)

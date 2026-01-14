@@ -8,10 +8,10 @@ import (
 
 func Index(_ *http.Request) any {
 	return struct {
-		ServiceName            string `json:"service_name"`
-		ServiceCurrentDateTime string `json:"service_current_date_time"`
+		ServiceName        string `json:"service_name"`
+		ServiceCurrentTime string `json:"service_current_time"`
 	}{
-		ServiceName:            common.ServiceName,
-		ServiceCurrentDateTime: time.Now().UTC().Format(common.ApiDateTimeTz),
+		ServiceName:        common.ServiceName,
+		ServiceCurrentTime: time.Now().UTC().Format(common.ApiDateTimeTz),
 	}
 }
