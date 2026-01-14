@@ -1,9 +1,6 @@
 package lugserver
 
 import (
-	"LuG/planets/api"
-	"LuG/planets/general/env"
-	"LuG/planets/general/luglog"
 	"context"
 	"errors"
 	"fmt"
@@ -13,6 +10,10 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/LuckyGuessServices/planets/api"
+	"github.com/LuckyGuessServices/planets/general/env"
+	"github.com/LuckyGuessServices/planets/general/luglog"
 )
 
 // Serve starts HTTP server and blocks execution.

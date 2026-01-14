@@ -1,8 +1,9 @@
 package endpoints_test
 
 import (
-	"LuG/planets/test_tools"
 	"testing"
+
+	"github.com/LuckyGuessServices/planets/test_tools"
 )
 
 func TestMain(m *testing.M) {

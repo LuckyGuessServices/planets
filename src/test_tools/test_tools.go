@@ -1,11 +1,12 @@
 package test_tools
 
 import (
-	"LuG/planets/general/env"
-	"LuG/planets/general/luglog"
-	"LuG/planets/general/shutdown_cleanup"
 	"os"
 	"testing"
+
+	"github.com/LuckyGuessServices/planets/general/env"
+	"github.com/LuckyGuessServices/planets/general/luglog"
+	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
 )
 
 var isGlobalSetUpLaunched = false

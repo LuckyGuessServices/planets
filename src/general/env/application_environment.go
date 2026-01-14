@@ -1,8 +1,9 @@
 package env
 
 import (
-	"LuG/planets/general/luglog"
 	"fmt"
+
+	"github.com/LuckyGuessServices/planets/general/luglog"
 )
 
 type ApplicationEnvironmentType string

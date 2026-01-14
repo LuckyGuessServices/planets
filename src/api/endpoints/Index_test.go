@@ -1,12 +1,13 @@
 package endpoints_test
 
 import (
-	"LuG/planets/api"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"testing/synctest"
+
+	"github.com/LuckyGuessServices/planets/api"
 
 	"github.com/google/go-cmp/cmp"
 )

@@ -1,9 +1,10 @@
 package endpoints
 
 import (
-	"LuG/planets/common"
 	"net/http"
 	"time"
+
+	"github.com/LuckyGuessServices/planets/general"
 )
 
 func Index(_ *http.Request) any {
@@ -11,7 +12,7 @@ func Index(_ *http.Request) any {
 		ServiceName        string `json:"service_name"`
 		ServiceCurrentTime string `json:"service_current_time"`
 	}{
-		ServiceName:        common.ServiceName,
-		ServiceCurrentTime: time.Now().UTC().Format(common.ApiDateTimeTz),
+		ServiceName:        general.ServiceName,
+		ServiceCurrentTime: time.Now().UTC().Format(general.ApiDateTimeTz),
 	}
 }

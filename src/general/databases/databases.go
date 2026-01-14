@@ -1,11 +1,12 @@
 package databases
 
 import (
-	"LuG/planets/general/env"
-	"LuG/planets/general/luglog"
-	"LuG/planets/general/shutdown_cleanup"
 	"database/sql"
 	"fmt"
+
+	"github.com/LuckyGuessServices/planets/general/env"
+	"github.com/LuckyGuessServices/planets/general/luglog"
+	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
 
 	_ "github.com/lib/pq"
 )

@@ -1,10 +1,11 @@
 package api
 
 import (
-	"LuG/planets/api/endpoints"
-	"LuG/planets/general/luglog"
 	"encoding/json"
 	"net/http"
+
+	"github.com/LuckyGuessServices/planets/api/endpoints"
+	"github.com/LuckyGuessServices/planets/general/luglog"
 )
 
 // Router A complete router for the API server.
