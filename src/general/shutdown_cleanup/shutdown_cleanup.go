@@ -18,6 +18,8 @@ func ExecuteStack() {
 	}
 }
 
+// Register adds a function to a list fo functions called during application shutdown.
+// Call [ExecuteStack] inside the "main()" defer function to invoke all registered functions.
 func Register(funcId string, f func()) {
 	if isExecuted {
 		panic("Unable to add a shutdown cleanup function: the cleanup itself is executed already!")

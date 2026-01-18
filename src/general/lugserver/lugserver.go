@@ -31,12 +31,9 @@ func Serve() {
 		panicServingGoroutine any
 	)
 
+	envConfig := env.Config()
 	server := &http.Server{
-		Addr: fmt.Sprintf(
-			"%s:%s",
-			env.VarValue(env.VarNameServerListenHost, "127.0.0.1", true),
-			env.VarValue(env.VarNameServerListenPort, "8080", false),
-		),
+		Addr:    fmt.Sprintf("%s:%d", envConfig.ServerListenHost(), envConfig.ServerListenPort()),
 		Handler: api.Router(),
 	}
 

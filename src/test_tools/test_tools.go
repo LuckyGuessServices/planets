@@ -1,9 +1,11 @@
 package test_tools
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/LuckyGuessServices/planets/general/databases"
 	"github.com/LuckyGuessServices/planets/general/env"
 	"github.com/LuckyGuessServices/planets/general/luglog"
 	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
@@ -30,10 +32,93 @@ func globalSetUp() {
 	}
 	isGlobalSetUpLaunched = true
 
-	if err := os.Setenv(env.VarNameApplicationEnvironment, string(env.ApplicationEnvironmentTest)); err != nil {
-		luglog.Fatal(err)
+	enforceEnvVars()
+
+	appEnv := env.Config().ApplicationEnvironment()
+	if env.ApplicationEnvironmentTest != appEnv {
+		luglog.Fatal("Invalid environment type: ", appEnv)
 	}
-	if env.ApplicationEnvironmentTest != env.AppEnv() {
-		luglog.Fatal("Invalid environment type:", env.AppEnv())
+
+	recreateTestDatabase()
+	databases.MigrateUp()
+}
+
+func enforceEnvVars() {
+	setEnvVar(env.VarNameApplicationEnvironment, string(env.ApplicationEnvironmentTest))
+}
+
+func recreateTestDatabase() {
+	// CONFIG AND VARS ->
+
+	envConfig := env.Config()
+
+	dbConfig := databases.NewDBMainConfig()
+	dbConfig.Host = envConfig.DBMainHost()
+	dbConfig.Port = envConfig.DBMainPort()
+	dbConfig.DBName = envConfig.DBMainRootDatabaseName()
+	dbConfig.UserName = envConfig.DBMainRootUsername()
+	dbConfig.UserPassword = envConfig.DBMainRootPassword()
+
+	dbMainRoot := databases.Open(databases.DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
+	defer func() {
+		err := dbMainRoot.Close()
+		if err != nil {
+			luglog.Fatal("Failed to close Main 'root' pool: ", err)
+		} else {
+			luglog.Print("Main 'root' pool is closed.")
+		}
+	}()
+	luglog.Print("Main 'root' pool is initialized: ", dbConfig.DebugInfo())
+
+	// <- CONFIG AND VARS
+
+	// DATABASE RECREATION:
+
+	_, errTerminateConnections := dbMainRoot.Exec(
+		fmt.Sprintf(
+			`
+				SELECT pg_terminate_backend(pg_stat_activity.pid)
+				FROM pg_stat_activity
+				WHERE pg_stat_activity.datname = '%s' AND pid <> pg_backend_pid()
+			`,
+			envConfig.DBMainDatabaseName(),
+		),
+	)
+	if errTerminateConnections != nil {
+		luglog.Fatalf(
+			"Failed to terminate existing connections to database '%s': %v",
+			envConfig.DBMainDatabaseName(),
+			errTerminateConnections,
+		)
+	}
+
+	_, errDropDatabase := dbMainRoot.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\"", envConfig.DBMainDatabaseName()))
+	if errDropDatabase != nil {
+		luglog.Fatalf("Failed to drop database '%s': %v", envConfig.DBMainDatabaseName(), errDropDatabase)
+	}
+
+	_, errCreateDatabase := dbMainRoot.Exec(
+		fmt.Sprintf("CREATE DATABASE \"%s\" OWNER \"%s\"", envConfig.DBMainDatabaseName(), envConfig.DBMainUsername()),
+	)
+	if errCreateDatabase != nil {
+		luglog.Fatalf(
+			"Failed to create database '%s' owned by user '%s': %v",
+			envConfig.DBMainDatabaseName(),
+			envConfig.DBMainUsername(),
+			errCreateDatabase,
+		)
+	}
+
+	luglog.Printf("Database '%s' is recreated.", envConfig.DBMainDatabaseName())
+}
+
+func setEnvVar(envVarName string, newValue string) {
+	if err := os.Setenv(envVarName, string(newValue)); err != nil {
+		luglog.Fatalf(
+			"Failed to set env var '%s' to '%v': %v",
+			envVarName,
+			newValue,
+			err,
+		)
 	}
 }

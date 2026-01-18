@@ -6,9 +6,6 @@
 
 ## MVP
 
-1. - [ ] Add database migrations tool. Minimal requirements:
-    * Migration version control mechanism.
-    * Go-based migration files.
 1. - [ ] Ensure the database contents remain the same at the beginning of each test. Options:
     * Rollback. See https://github.com/DATA-DOG/go-txdb
     * `tmpfs` plus DB template duplication.
@@ -40,9 +37,11 @@
 
 ## Misc
 
-1. - [ ] Make HTTP server and DBMS accept secured requests (HTTPS + sslmode=require).
 1. - [ ] Make a way in tests to specify just then ending part of an endpoint URI (like `/` instead of `/api/`),
      (?) but try using a global router at the same time.
-1. - [ ] Cover [api.go](../src/api/api.go) functions with tests.
+1. - [ ] Add versions to API like `/api/vX.Y`
+1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
+1. - [ ] Make HTTP server and DBMS accept secured requests (HTTPS + sslmode=require).
+1. - [ ] Cover [api.go](../src/api/api.go) general functions with tests.
     1. - [ ] Stripping URI prefixes from API endpoints' URIs.
     1. - [ ] Edge cases with errors.

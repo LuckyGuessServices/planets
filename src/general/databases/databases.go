@@ -11,54 +11,98 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const DBMainDriverName = "postgres"
+
+type DBMainConfig struct {
+	ClientEncoding string
+	ConnectTimeout int
+	DBName         string
+	Host           string
+	Port           int
+	SSLMode        string
+	TimeZone       string
+	UserName       string
+	UserPassword   string
+}
+
+func (config *DBMainConfig) String() string {
+	return config.DebugInfo()
+}
+
+func (config *DBMainConfig) DSN() string {
+	return config.dsnInternal(false)
+}
+
+func (config *DBMainConfig) DebugInfo() string {
+	return config.dsnInternal(true)
+}
+
+func (config *DBMainConfig) dsnInternal(hidePassword bool) string {
+	var password string
+	if hidePassword {
+		password = "(hidden)"
+	} else {
+		password = config.UserPassword
+	}
+
+	return fmt.Sprintf(
+		"client_encoding=%s connect_timeout=%d dbname=%s host=%s port=%d sslmode=%s TimeZone=%s user=%s password=%s",
+		config.ClientEncoding,
+		config.ConnectTimeout,
+		config.DBName,
+		config.Host,
+		config.Port,
+		config.SSLMode,
+		config.TimeZone,
+		config.UserName,
+		password,
+	)
+}
+
+func NewDBMainConfig() *DBMainConfig {
+	return &DBMainConfig{
+		ClientEncoding: "UTF8",
+		ConnectTimeout: 2,
+		SSLMode:        "disable",
+		TimeZone:       "UTC",
+	}
+}
+
 var dbMain *sql.DB
 
-func DBMain() *sql.DB {
+// Main returns the same main database connections pool. If the pool has not been already created,
+// then firstly creates it and stores in a local variable for future function calls.
+// The pool is closed automatically during the application shutdown (see [shutdown_cleanup.Register]).
+func Main() *sql.DB {
 	if nil != dbMain {
 		return dbMain
 	}
-	luglog.Print("DBMain pool is initialized.")
 
-	dsn := func() string {
-		dsnTemplate := "host=%s port=%s user=%s password=%s dbname=%s"
-		if env.ApplicationEnvironmentTest == env.AppEnv() {
-			return fmt.Sprintf(
-				dsnTemplate,
-				env.VarValue(env.VarNameDBMainHost, "127.0.0.1", false),
-				env.VarValue(env.VarNameDBMainPort, "5400", false),
-				env.VarValue(env.VarNameDBMainUsername, "planets_test_user", false),
-				env.VarValue(env.VarNameDBMainPassword, "planets_test_pass", false),
-				env.VarValue(env.VarNameDBMainDatabaseName, "planets_test", false),
-			)
-		}
+	envConfig := env.Config()
+	dbConfig := NewDBMainConfig()
+	dbConfig.DBName = envConfig.DBMainDatabaseName()
+	dbConfig.Host = envConfig.DBMainHost()
+	dbConfig.Port = envConfig.DBMainPort()
+	dbConfig.UserName = envConfig.DBMainUsername()
+	dbConfig.UserPassword = envConfig.DBMainPassword()
 
-		return fmt.Sprintf(
-			dsnTemplate,
-			env.VarValue(env.VarNameDBMainHost, "127.0.0.1", false),
-			env.VarValue(env.VarNameDBMainPort, "5400", false),
-			env.VarValue(env.VarNameDBMainUsername, "planets_user", false),
-			env.VarValue(env.VarNameDBMainPassword, "planets_pass", false),
-			env.VarValue(env.VarNameDBMainDatabaseName, "planets", false),
-		)
-	}() +
-		" connect_timeout=2 sslmode=disable client_encoding=UTF8 TimeZone=UTC"
-
-	dbMain = Open("postgres", dsn)
-	shutdown_cleanup.Register("Close DBMain pool", func() {
-		wasOpened, err := CloseDBMain()
+	dbMain = Open(DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
+	shutdown_cleanup.Register("Close Main pool", func() {
+		wasOpened, err := CloseMain()
 		if err != nil {
-			luglog.Print("Failed to close DBMain pool: ", err)
+			luglog.Print("Failed to close Main pool: ", err)
 		} else if !wasOpened {
-			luglog.Print("DBMain pool was closed earlier.")
+			luglog.Print("Main pool was closed earlier.")
 		} else {
-			luglog.Print("DBMain pool is closed successfully.")
+			luglog.Print("Main pool is closed.")
 		}
 	})
+	luglog.Print("Main pool is initialized: ", dbConfig.DebugInfo())
 
 	return dbMain
 }
 
-func CloseDBMain() (wasOpened bool, err error) {
+func CloseMain() (wasOpened bool, err error) {
 	if nil == dbMain {
 		return false, nil
 	}
@@ -69,16 +113,16 @@ func CloseDBMain() (wasOpened bool, err error) {
 	return true, err
 }
 
-func Open(driverName string, dataSourceName string) *sql.DB {
+func Open(driverName string, dataSourceName string, debugInfo string) *sql.DB {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
-		luglog.Fatalf("Unable to open '%v' connection '%v': %v", driverName, dataSourceName, err)
+		luglog.Fatalf("Unable to open '%s' connection. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
 	}
 
 	err = db.Ping()
 	if err != nil {
 		_ = db.Close()
-		luglog.Fatalf("Unable to ping '%v' connection '%v': %v", driverName, dataSourceName, err)
+		luglog.Fatalf("Unable to ping '%s' connection. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
 	}
 
 	return db

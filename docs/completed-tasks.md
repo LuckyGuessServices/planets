@@ -18,6 +18,36 @@
     1. - [x] Create the environment type "enum". Define `DEV_LOCAL` and `TEST` environments.
     1. - [x] Create users and databases for each environment.
     1. - [x] Set up a connection (depends on the environment). Specify UTC time zone explicitly.
+1. - [x] Add database migrations tool.
+
+     Minimal requirements:
+    * Must support PostgreSQL.
+    * Migrations table must contain info about each migration (at least, applied).
+
+     For instance, each applied migration is represented as a separate table row with its version and appliance date.
+    * Migration appliance timestamp must be made in UTC.
+    * Ability to downgrade by 1 or N migrations.
+
+     Optional useful stuff:
+    * Ability to manage migrations within GoLang code.
+    * Migration files written in GoLang functions.
+
+     Tasks:
+    1. - [x] Pick a tool. Candidates:
+        1. https://github.com/golang-migrate/migrate
+
+           ❌ _Rejected_: stores only a version of the last applied migration
+           (just a single record in `schema_migrations`).
+
+           Other notable issues:
+            * "up" and "down" migrations are separated in 2 different files.
+            * No ready tools to downgrade a single migration. You need to determine a previous version manually by
+              parsing your migration files.
+        1. https://github.com/pressly/goose
+
+           ✅ **Accepted.**
+    1. - [x] Make DB test instance to be rewritten before all tests.
+        * Recreate DB from some bootstrap plus all migrations applied.
 
 ## Misc
 
