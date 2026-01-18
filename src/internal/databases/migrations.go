@@ -1,8 +1,8 @@
 package databases
 
 import (
-	"github.com/LuckyGuessServices/planets/general/luglog"
-	"github.com/LuckyGuessServices/planets/general/paths"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
+	"github.com/LuckyGuessServices/planets/internal/paths"
 	"github.com/pressly/goose/v3"
 )
 

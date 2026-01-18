@@ -31,7 +31,7 @@
         1. - [ ] Try to explicitly forbid external connections - if you add a new external API and forget to update
              autotests, the latter will fail while trying to request an external IP.
         1. - [ ] Cover cases: data from external API, data from the local storage, invalid date, no data available.
-1. - [ ] Upgrade [luglog.go](../src/general/luglog/luglog.go) calls:
+1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
      1. - [ ] Implement logging levels.
      1. - [ ] Add an option to additionally (like `tee`) or exclusively log to files.
 
@@ -42,6 +42,6 @@
 1. - [ ] Add versions to API like `/api/vX.Y`
 1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
 1. - [ ] Make HTTP server and DBMS accept secured requests (HTTPS + sslmode=require).
-1. - [ ] Cover [api.go](../src/api/api.go) general functions with tests.
+1. - [ ] Cover [api.go](../src/internal/api/api.go) general functions with tests.
     1. - [ ] Stripping URI prefixes from API endpoints' URIs.
     1. - [ ] Edge cases with errors.

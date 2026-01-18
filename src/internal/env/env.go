@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LuckyGuessServices/planets/general/luglog"
-	"github.com/LuckyGuessServices/planets/general/paths/general"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
+	"github.com/LuckyGuessServices/planets/internal/paths/general"
 )
 
 const (

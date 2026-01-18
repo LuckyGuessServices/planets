@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LuckyGuessServices/planets/general"
+	"github.com/LuckyGuessServices/planets/internal/general"
 )
 
 func Index(_ *http.Request) any {

@@ -3,7 +3,7 @@ package general
 import (
 	"path/filepath"
 
-	"github.com/LuckyGuessServices/planets/general/luglog"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
 )
 
 // Abs returns an absolute path to a file or directory.

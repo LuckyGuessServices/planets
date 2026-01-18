@@ -3,7 +3,7 @@ package paths
 import (
 	"fmt"
 
-	"github.com/LuckyGuessServices/planets/general/env"
+	"github.com/LuckyGuessServices/planets/internal/env"
 )
 
 func MigrationScriptsDir() string {

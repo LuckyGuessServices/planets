@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/LuckyGuessServices/planets/api"
-	"github.com/LuckyGuessServices/planets/general/env"
-	"github.com/LuckyGuessServices/planets/general/luglog"
+	"github.com/LuckyGuessServices/planets/internal/api"
+	"github.com/LuckyGuessServices/planets/internal/env"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
 )
 
 // Serve starts HTTP server and blocks execution.

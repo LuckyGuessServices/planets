@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/LuckyGuessServices/planets/general/env"
-	"github.com/LuckyGuessServices/planets/general/luglog"
-	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
+	"github.com/LuckyGuessServices/planets/internal/env"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
+	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
 
 	_ "github.com/lib/pq"
 )
@@ -87,17 +87,17 @@ func Main() *sql.DB {
 	dbConfig.UserPassword = envConfig.DBMainPassword()
 
 	dbMain = Open(DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
-	shutdown_cleanup.Register("Close Main pool", func() {
+	shutdown_cleanup.Register("DB: close Main pool", func() {
 		wasOpened, err := CloseMain()
 		if err != nil {
-			luglog.Print("Failed to close Main pool: ", err)
+			luglog.Print("[DB] Failed to close Main pool: ", err)
 		} else if !wasOpened {
-			luglog.Print("Main pool was closed earlier.")
+			luglog.Print("[DB] Main pool was closed earlier.")
 		} else {
-			luglog.Print("Main pool is closed.")
+			luglog.Print("[DB] Main pool is closed.")
 		}
 	})
-	luglog.Print("Main pool is initialized: ", dbConfig.DebugInfo())
+	luglog.Print("[DB] Main pool is initialized: ", dbConfig.DebugInfo())
 
 	return dbMain
 }

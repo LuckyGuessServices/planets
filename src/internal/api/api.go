@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/LuckyGuessServices/planets/api/endpoints"
-	"github.com/LuckyGuessServices/planets/general/luglog"
+	"github.com/LuckyGuessServices/planets/internal/api/endpoints"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
 )
 
 // Router A complete router for the API server.

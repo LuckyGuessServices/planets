@@ -1,19 +1,29 @@
 package shutdown_cleanup
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/LuckyGuessServices/planets/internal/luglog"
+)
 
 var (
 	mu             sync.Mutex
 	isExecuted     = false
 	cleanupFnSlice []func()
-	cleanupFnIdMap = make(map[string]int)
+	cleanupFnIDMap = make(map[string]int)
 )
 
 // ExecuteStack executes registered functions in LIFO order - starting from the function registered last.
 func ExecuteStack() {
 	isExecuted = true
 
+	funcIDByPositionMap := make(map[int]string, len(cleanupFnIDMap))
+	for funcID, position := range cleanupFnIDMap {
+		funcIDByPositionMap[position] = funcID
+	}
+
 	for i := len(cleanupFnSlice) - 1; i >= 0; i-- {
+		luglog.Printf("[Shutdown #%d] %s", i, funcIDByPositionMap[i])
 		cleanupFnSlice[i]()
 	}
 }
@@ -27,10 +37,10 @@ func Register(funcId string, f func()) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if _, ok := cleanupFnIdMap[funcId]; ok {
+	if _, ok := cleanupFnIDMap[funcId]; ok {
 		return
 	}
 
 	cleanupFnSlice = append(cleanupFnSlice, f)
-	cleanupFnIdMap[funcId] = len(cleanupFnSlice) - 1
+	cleanupFnIDMap[funcId] = len(cleanupFnSlice) - 1
 }

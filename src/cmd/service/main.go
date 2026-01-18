@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/LuckyGuessServices/planets/general/lugserver"
-	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
+	"github.com/LuckyGuessServices/planets/internal/lugserver"
+	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
 )
 
 func main() {

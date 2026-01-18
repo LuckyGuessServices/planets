@@ -7,7 +7,7 @@ import (
 	"testing"
 	"testing/synctest"
 
-	"github.com/LuckyGuessServices/planets/api"
+	"github.com/LuckyGuessServices/planets/internal/api"
 
 	"github.com/google/go-cmp/cmp"
 )

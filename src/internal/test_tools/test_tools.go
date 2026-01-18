@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/LuckyGuessServices/planets/general/databases"
-	"github.com/LuckyGuessServices/planets/general/env"
-	"github.com/LuckyGuessServices/planets/general/luglog"
-	"github.com/LuckyGuessServices/planets/general/shutdown_cleanup"
+	"github.com/LuckyGuessServices/planets/internal/databases"
+	"github.com/LuckyGuessServices/planets/internal/env"
+	"github.com/LuckyGuessServices/planets/internal/luglog"
+	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
 )
 
 var isGlobalSetUpLaunched = false
@@ -63,12 +63,12 @@ func recreateTestDatabase() {
 	defer func() {
 		err := dbMainRoot.Close()
 		if err != nil {
-			luglog.Fatal("Failed to close Main 'root' pool: ", err)
+			luglog.Fatal("[DB] Failed to close Main 'root' pool: ", err)
 		} else {
-			luglog.Print("Main 'root' pool is closed.")
+			luglog.Print("[DB] Main 'root' pool is closed.")
 		}
 	}()
-	luglog.Print("Main 'root' pool is initialized: ", dbConfig.DebugInfo())
+	luglog.Print("[DB] Main 'root' pool is initialized: ", dbConfig.DebugInfo())
 
 	// <- CONFIG AND VARS
 
@@ -113,7 +113,7 @@ func recreateTestDatabase() {
 }
 
 func setEnvVar(envVarName string, newValue string) {
-	if err := os.Setenv(envVarName, string(newValue)); err != nil {
+	if err := os.Setenv(envVarName, newValue); err != nil {
 		luglog.Fatalf(
 			"Failed to set env var '%s' to '%v': %v",
 			envVarName,
