@@ -3,4 +3,4 @@
 
 Read also: [TODO](docs/todo.md)
 
-![](docs/assets/system-design.jpg "Service Scheme")
+![](docs/assets/scheme.jpg "Service Scheme")
