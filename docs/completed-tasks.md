@@ -48,6 +48,11 @@
            ✅ **Accepted.**
     1. - [x] Make DB test instance to be rewritten before all tests.
         * Recreate DB from some bootstrap plus all migrations applied.
+1. - [x] Ensure the database contents remain the same at the beginning of each test. Options:
+    * ✅ (preferable) Rollback. See https://github.com/DATA-DOG/go-txdb
+
+      Or implement an own wrapper for transactions management.
+    * (backup plan) `tmpfs` plus `CREATE DATABASE "X" WITH TEMPLATE "Y"`
 
 ## Misc
 

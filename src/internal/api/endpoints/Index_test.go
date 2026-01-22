@@ -8,13 +8,14 @@ import (
 	"testing/synctest"
 
 	"github.com/LuckyGuessServices/planets/internal/api"
+	"github.com/LuckyGuessServices/planets/internal/test_tools"
 
 	"github.com/google/go-cmp/cmp"
 )
 
 // TestIndex Tests a typical request and response.
 func TestIndex(t *testing.T) {
-	synctest.Test(t, func(t *testing.T) {
+	test_tools.RunInSyncBubble(t, func(t *testing.T) {
 		request, errRequest := http.NewRequest("GET", "/api/", nil)
 		if errRequest != nil {
 			t.Fatal(errRequest)
@@ -28,10 +29,11 @@ func TestIndex(t *testing.T) {
 
 		synctest.Wait()
 
-		bodyActual := response.Body.Bytes()
+		decoder := json.NewDecoder(response.Body)
+		decoder.UseNumber()
 		var bodyMapActual map[string]any
-		if errUnmarshal := json.Unmarshal(bodyActual, &bodyMapActual); errUnmarshal != nil {
-			t.Fatal("Failed to unmarshal JSON:", bodyActual, "\nError:", errUnmarshal)
+		if errDecode := decoder.Decode(&bodyMapActual); errDecode != nil {
+			t.Fatal("Failed to decode JSON:", response.Body.Bytes(), "\nError:", errDecode)
 		}
 
 		bodyMapExpected := map[string]any{
@@ -46,20 +48,22 @@ func TestIndex(t *testing.T) {
 
 // TestIndexNoSlash Tests a special case for the "index" route, when URI lacks a trailing slash.
 func TestIndexNoSlashRedirect(t *testing.T) {
-	request, errRequest := http.NewRequest("GET", "/api", nil)
-	if errRequest != nil {
-		t.Fatal(errRequest)
-	}
-	response := httptest.NewRecorder()
-	api.Router().ServeHTTP(response, request)
+	test_tools.RunInSyncBubble(t, func(t *testing.T) {
+		request, errRequest := http.NewRequest("GET", "/api", nil)
+		if errRequest != nil {
+			t.Fatal(errRequest)
+		}
+		response := httptest.NewRecorder()
+		api.Router().ServeHTTP(response, request)
 
-	if status := response.Code; status != http.StatusMovedPermanently {
-		t.Errorf("Expected HTTP status %v, got %v", http.StatusMovedPermanently, status)
-	}
+		if status := response.Code; status != http.StatusMovedPermanently {
+			t.Errorf("Expected HTTP status %v, got %v", http.StatusMovedPermanently, status)
+		}
 
-	responseBodyExpected := "<a href=\"/api/\">Moved Permanently</a>.\n\n"
-	responseBodyActual := response.Body.String()
-	if responseBodyActual != responseBodyExpected {
-		t.Errorf("Expected body:\n%v\nGot:\n%v", responseBodyExpected, responseBodyActual)
-	}
+		responseBodyExpected := "<a href=\"/api/\">Moved Permanently</a>.\n\n"
+		responseBodyActual := response.Body.String()
+		if responseBodyActual != responseBodyExpected {
+			t.Errorf("Expected body:\n%v\nGot:\n%v", responseBodyExpected, responseBodyActual)
+		}
+	})
 }

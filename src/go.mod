@@ -6,6 +6,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.26.0
+	github.com/DATA-DOG/go-txdb v0.2.1
 )
 
 require (

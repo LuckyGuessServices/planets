@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"testing/synctest"
 
 	"github.com/LuckyGuessServices/planets/internal/databases"
 	"github.com/LuckyGuessServices/planets/internal/env"
@@ -33,14 +34,14 @@ func globalSetUp() {
 	isGlobalSetUpLaunched = true
 
 	enforceEnvVars()
-
-	appEnv := env.Config().ApplicationEnvironment()
-	if env.ApplicationEnvironmentTest != appEnv {
-		luglog.Fatal("Invalid environment type: ", appEnv)
-	}
+	env.PanicIfEnvNotTest()
 
 	recreateTestDatabase()
 	databases.MigrateUp()
+
+	// Do NOT open the actual pool between tests. Most tests are executed within a "synced bubble" ([synctest.Test]),
+	// and a db pool creation generates go-routines that should be placed within a test "bubble".
+	databases.ReplaceMainWithTxDB()
 }
 
 func enforceEnvVars() {
@@ -59,7 +60,7 @@ func recreateTestDatabase() {
 	dbConfig.UserName = envConfig.DBMainRootUsername()
 	dbConfig.UserPassword = envConfig.DBMainRootPassword()
 
-	dbMainRoot := databases.Open(databases.DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
+	dbMainRoot := databases.OpenAndPing(databases.DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
 	defer func() {
 		err := dbMainRoot.Close()
 		if err != nil {
@@ -121,4 +122,20 @@ func setEnvVar(envVarName string, newValue string) {
 			err,
 		)
 	}
+}
+
+// RunInSyncBubble ensures testFunction execution inside an isolated goroutines bubble with mocked time
+// and hanging database pools being closed at the end of that bubble execution.
+//
+// Call [synctest.Wait] inside testFunction to wait for all goroutines execution to end.
+func RunInSyncBubble(t *testing.T, testFunction func(t *testing.T)) {
+	synctest.Test(t, func(t *testing.T) {
+		defer func() {
+			if _, errCloseMain := databases.CloseMain(); errCloseMain != nil {
+				luglog.Fatal("[DB] Failed to close Main(TxDB) pool: ", errCloseMain)
+			}
+		}()
+
+		testFunction(t)
+	})
 }

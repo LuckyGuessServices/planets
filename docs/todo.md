@@ -7,11 +7,7 @@
 
 ## MVP
 
-1. - [ ] Ensure the database contents remain the same at the beginning of each test. Options:
-    * (preferable) Rollback. See https://github.com/DATA-DOG/go-txdb
-
-      Or implement an own wrapper for transactions management.
-    * (backup plan) `tmpfs` plus `CREATE DATABASE "X" WITH TEMPLATE "Y"`
+1. - [ ] Add https://github.com/stretchr/testify and other helpers to simplify tests.
 1. - [ ] Catch all handlers' panics and turn into valid responses.
 1. - [ ] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
     1. - [ ] Implement a method for the only endpoint `/` and its optional parameter `date`
@@ -22,7 +18,6 @@
         * 4xx/5xx responses
         * no response / time-out
     1. - [ ] (optionally) Add _manually launched_ real autotests (maybe as a separate "application").
-1. - [ ] Pick and test an ORM library. Candidate: https://github.com/ent/ent
 1. - [ ] Add `on-date` GET endpoint. Utilize the API client created on the previous step.
     1. - [ ] Definition:
         * Request parameters:
@@ -33,12 +28,20 @@
         * Add a `TODO` comment to store data in background in the future.
     1. - [ ] Consider edge cases:
         * Invalid date.
-        * No data in the local storage, external APIs are unavailable (no response or time out).
+        * No data.
+        * External APIs are unavailable (no response or time out).
     1. - [ ] Cover `on-date` endpoint with autotests.
         1. - [ ] Mock external API(s).
         1. - [ ] Try to explicitly forbid external connections - if you add a new external API and forget to update
              autotests, the latter will fail while trying to request an external IP.
-        1. - [ ] Cover cases: data from external API, data from the local storage, invalid date, no data available.
+        1. - [ ] Cover cases: data from external API, invalid date, no data available.
+1. - [ ] Pick and test an ORM library. Candidate: https://github.com/ent/ent
+1. - [ ] Store planet's data in a local database.
+    1. - [ ] Add an entity holding a planet's data - a table and ORM-like code.
+    1. - [ ] Update `on-date` endpoint: try retrieving data from the local database.
+
+         If there is no local data, then request the external API first and store received data locally.
+    1. - [ ] Cover with tests (is already stored or not locally).
 
 ## Future development
 

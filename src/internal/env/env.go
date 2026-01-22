@@ -131,7 +131,7 @@ func Config() *ConfigStruct {
 	if nil == config {
 		appEnvRaw := varValue(VarNameApplicationEnvironment, string(defaultApplicationEnvironment), false)
 		appEnv := ApplicationEnvironmentType(appEnvRaw)
-		if err := ValidateAppEnv(appEnv); err != nil {
+		if err := validateAppEnv(appEnv); err != nil {
 			luglog.Fatal(err)
 		}
 
@@ -207,12 +207,19 @@ const (
 	ApplicationEnvironmentProd     ApplicationEnvironmentType = "app_prod"
 )
 
-func ValidateAppEnv(appEnvValue ApplicationEnvironmentType) error {
+func validateAppEnv(appEnvValue ApplicationEnvironmentType) error {
 	switch appEnvValue {
 	case ApplicationEnvironmentDevLocal, ApplicationEnvironmentTest, ApplicationEnvironmentProd:
 		return nil
 	default:
 		return fmt.Errorf("unsupported environment type ('%v') value: %v", VarNameApplicationEnvironment, appEnvValue)
+	}
+}
+
+func PanicIfEnvNotTest() {
+	appEnv := Config().ApplicationEnvironment()
+	if ApplicationEnvironmentTest != appEnv {
+		luglog.Fatalf("Invalid application environment: '%v'. Expected: '%v' ", appEnv, ApplicationEnvironmentTest)
 	}
 }
 
