@@ -7,7 +7,6 @@
 
 ## MVP
 
-1. - [ ] Add https://github.com/stretchr/testify and other helpers to simplify tests.
 1. - [ ] Catch all handlers' panics and turn into valid responses.
 1. - [ ] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
     1. - [ ] Implement a method for the only endpoint `/` and its optional parameter `date`

@@ -184,8 +184,7 @@ func ping(db *sql.DB, driverName string, debugInfo string) {
 //
 // You have to ensure this TxDB pool is closed before each test starts (or after each test ends) its work.
 func ReplaceMainWithTxDB() {
-	dbMain.dbMutex.Lock()
-	defer dbMain.dbMutex.Unlock()
+	env.PanicIfEnvNotTest()
 
 	dbMain.replaceNormalPoolWithTxDB = true
 

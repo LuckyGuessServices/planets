@@ -53,6 +53,7 @@
 
       Or implement an own wrapper for transactions management.
     * (backup plan) `tmpfs` plus `CREATE DATABASE "X" WITH TEMPLATE "Y"`
+1. - [x] Add https://github.com/stretchr/testify and other helpers to simplify tests.
 
 ## Misc
 
