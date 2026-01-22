@@ -132,14 +132,14 @@ func Config() *ConfigStruct {
 		appEnvRaw := varValue(VarNameApplicationEnvironment, string(defaultApplicationEnvironment), false)
 		appEnv := ApplicationEnvironmentType(appEnvRaw)
 		if err := validateAppEnv(appEnv); err != nil {
-			luglog.Fatal(err)
+			luglog.Panic(err)
 		}
 
 		appRootDir := varValue(VarNameApplicationFilesRootDirectory, "", true)
 		if "" == appRootDir {
 			_, thisFilePath, _, isOk := runtime.Caller(0)
 			if !isOk {
-				luglog.Fatal("Failed to determine project source root directory.")
+				luglog.Panic("Failed to determine project source root directory.")
 			}
 
 			appRootDir = general.Abs(fmt.Sprintf("%s/../..", filepath.Dir(thisFilePath)))
@@ -148,7 +148,7 @@ func Config() *ConfigStruct {
 		dbMainPortString := varValue(VarNameDBMainPort, defaultDBMainPort, false)
 		dbMainPortInt, errDBMainPortConv := strconv.Atoi(dbMainPortString)
 		if errDBMainPortConv != nil {
-			luglog.Fatalf(
+			luglog.Panicf(
 				"Failed to convert DBMain port value '%s' to an integer from env var '%s': %v",
 				dbMainPortString,
 				VarNameDBMainPort,
@@ -159,7 +159,7 @@ func Config() *ConfigStruct {
 		serverPortString := varValue(VarNameServerListenPort, defaultServerListenPort, false)
 		serverPortInt, errServerPortConv := strconv.Atoi(serverPortString)
 		if errServerPortConv != nil {
-			luglog.Fatalf(
+			luglog.Panicf(
 				"Failed to convert server port value '%s' to an integer from env var '%s': %v",
 				serverPortString,
 				VarNameServerListenPort,
@@ -219,7 +219,7 @@ func validateAppEnv(appEnvValue ApplicationEnvironmentType) error {
 func PanicIfEnvNotTest() {
 	appEnv := Config().ApplicationEnvironment()
 	if ApplicationEnvironmentTest != appEnv {
-		luglog.Fatalf("Invalid application environment: '%v'. Expected: '%v' ", appEnv, ApplicationEnvironmentTest)
+		luglog.Panicf("Invalid application environment: '%v'. Expected: '%v' ", appEnv, ApplicationEnvironmentTest)
 	}
 }
 
@@ -231,7 +231,7 @@ func varValue(envVarName string, defaultValue string, allowEmpty bool) string {
 
 	value = strings.TrimSpace(value)
 	if !allowEmpty && "" == value {
-		luglog.Fatalf("'%v' env var must not be empty", envVarName)
+		luglog.Panicf("'%v' env var must not be empty", envVarName)
 	}
 
 	return value

@@ -162,7 +162,7 @@ func openTxDB(driverName string, dataSourceName string, debugInfo string) *sql.D
 func open(driverName string, dataSourceName string, debugInfo string) *sql.DB {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
-		luglog.Fatalf("Unable to open '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
+		luglog.Panicf("Unable to open '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
 	}
 
 	return db
@@ -171,7 +171,7 @@ func open(driverName string, dataSourceName string, debugInfo string) *sql.DB {
 func ping(db *sql.DB, driverName string, debugInfo string) {
 	if err := db.Ping(); err != nil {
 		_ = db.Close()
-		luglog.Fatalf("Unable to ping '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
+		luglog.Panicf("Unable to ping '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
 	}
 }
 
@@ -190,7 +190,7 @@ func ReplaceMainWithTxDB() {
 
 	closeMainFunc, err := shutdown_cleanup.Unregister(dbMain.shutdownFuncId)
 	if err != nil {
-		luglog.Fatalf("Failed to unregister '%s': %v", dbMain.shutdownFuncId, err)
+		luglog.Panicf("Failed to unregister '%s': %v", dbMain.shutdownFuncId, err)
 	}
 	closeMainFunc()
 }

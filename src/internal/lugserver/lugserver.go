@@ -66,7 +66,7 @@ func Serve() {
 		if errShutdown != nil {
 			luglog.Print("HTTP server shutdown failure --> ", errShutdown, "\nForcing HTTP server to be closed...")
 			if err := server.Close(); err != nil {
-				luglog.Fatal("Failed to close HTTP server forcibly --> ", err)
+				luglog.Panic("Failed to close HTTP server forcibly --> ", err)
 			}
 			luglog.Print("HTTP server forcibly closed all listeners and connections.")
 		}
@@ -92,7 +92,7 @@ func Serve() {
 		//goland:noinspection HttpUrlsUsage
 		luglog.Print("HTTP server's address: http://", server.Addr)
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			luglog.Fatal("HTTP server listening failure --> ", err)
+			luglog.Panic("HTTP server listening failure --> ", err)
 		}
 		luglog.Print("HTTP server has stopped listening.")
 	})

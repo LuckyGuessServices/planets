@@ -13,12 +13,12 @@ func Printf(format string, value ...any) {
 	Print(fmt.Sprintf(format, value...))
 }
 
-func Fatal(value ...any) {
+func Panic(value ...any) {
 	errorMessage := fmt.Sprint(value...)
 	Print(errorMessage)
 	panic(errorMessage)
 }
 
-func Fatalf(format string, value ...any) {
-	Fatal(fmt.Sprintf(format, value...))
+func Panicf(format string, value ...any) {
+	Panic(fmt.Sprintf(format, value...))
 }

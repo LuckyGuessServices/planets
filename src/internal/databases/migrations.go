@@ -13,7 +13,7 @@ func MigrateUp() {
 		goose.WithAllowMissing(),
 	)
 	if err != nil {
-		luglog.Fatal("Failed to migrate up to the last migration: ", err)
+		luglog.Panic("Failed to migrate up to the last migration: ", err)
 	}
 }
 
@@ -23,6 +23,6 @@ func MigrateDownOne() {
 		paths.MigrationScriptsDir(),
 	)
 	if err != nil {
-		luglog.Fatal("Failed to migrate down a single migration: ", err)
+		luglog.Panic("Failed to migrate down a single migration: ", err)
 	}
 }

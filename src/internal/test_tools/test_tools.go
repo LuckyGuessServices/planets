@@ -64,7 +64,7 @@ func recreateTestDatabase() {
 	defer func() {
 		err := dbMainRoot.Close()
 		if err != nil {
-			luglog.Fatal("[DB] Failed to close Main 'root' pool: ", err)
+			luglog.Panic("[DB] Failed to close Main 'root' pool: ", err)
 		} else {
 			luglog.Print("[DB] Main 'root' pool is closed.")
 		}
@@ -86,7 +86,7 @@ func recreateTestDatabase() {
 		),
 	)
 	if errTerminateConnections != nil {
-		luglog.Fatalf(
+		luglog.Panicf(
 			"Failed to terminate existing connections to database '%s': %v",
 			envConfig.DBMainDatabaseName(),
 			errTerminateConnections,
@@ -95,14 +95,14 @@ func recreateTestDatabase() {
 
 	_, errDropDatabase := dbMainRoot.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\"", envConfig.DBMainDatabaseName()))
 	if errDropDatabase != nil {
-		luglog.Fatalf("Failed to drop database '%s': %v", envConfig.DBMainDatabaseName(), errDropDatabase)
+		luglog.Panicf("Failed to drop database '%s': %v", envConfig.DBMainDatabaseName(), errDropDatabase)
 	}
 
 	_, errCreateDatabase := dbMainRoot.Exec(
 		fmt.Sprintf("CREATE DATABASE \"%s\" OWNER \"%s\"", envConfig.DBMainDatabaseName(), envConfig.DBMainUsername()),
 	)
 	if errCreateDatabase != nil {
-		luglog.Fatalf(
+		luglog.Panicf(
 			"Failed to create database '%s' owned by user '%s': %v",
 			envConfig.DBMainDatabaseName(),
 			envConfig.DBMainUsername(),
@@ -115,7 +115,7 @@ func recreateTestDatabase() {
 
 func setEnvVar(envVarName string, newValue string) {
 	if err := os.Setenv(envVarName, newValue); err != nil {
-		luglog.Fatalf(
+		luglog.Panicf(
 			"Failed to set env var '%s' to '%v': %v",
 			envVarName,
 			newValue,
@@ -132,7 +132,7 @@ func RunInSyncBubble(t *testing.T, testFunction func(t *testing.T)) {
 	synctest.Test(t, func(t *testing.T) {
 		defer func() {
 			if _, errCloseMain := databases.CloseMain(); errCloseMain != nil {
-				luglog.Fatal("[DB] Failed to close Main(TxDB) pool: ", errCloseMain)
+				luglog.Panic("[DB] Failed to close Main(TxDB) pool: ", errCloseMain)
 			}
 		}()
 

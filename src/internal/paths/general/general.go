@@ -12,7 +12,7 @@ import (
 func Abs(somePath string) string {
 	absolutePath, err := filepath.Abs(somePath)
 	if err != nil {
-		luglog.Fatalf("Failed to detect absolute path for: '%s'", somePath)
+		luglog.Panicf("Failed to detect absolute path for: '%s'", somePath)
 	}
 
 	return absolutePath
