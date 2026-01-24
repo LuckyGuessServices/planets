@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/LuckyGuessServices/planets/internal/api"
+	"github.com/LuckyGuessServices/planets/internal/api/router"
 	"github.com/LuckyGuessServices/planets/internal/env"
 	"github.com/LuckyGuessServices/planets/internal/luglog"
 )
@@ -34,7 +34,7 @@ func Serve() {
 	envConfig := env.Config()
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", envConfig.ServerListenHost(), envConfig.ServerListenPort()),
-		Handler: api.Router(),
+		Handler: router.Create(),
 	}
 
 	defer func() {

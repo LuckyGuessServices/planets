@@ -54,6 +54,8 @@
       Or implement an own wrapper for transactions management.
     * (backup plan) `tmpfs` plus `CREATE DATABASE "X" WITH TEMPLATE "Y"`
 1. - [x] Add https://github.com/stretchr/testify and other helpers to simplify tests.
+1. - [x] Catch all handlers' panics and turn into valid responses.
+1. - [x] Add base functionality to create valid responses representing client errors.
 
 ## Misc
 

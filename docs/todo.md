@@ -7,7 +7,6 @@
 
 ## MVP
 
-1. - [ ] Catch all handlers' panics and turn into valid responses.
 1. - [ ] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
     1. - [ ] Implement a method for the only endpoint `/` and its optional parameter `date`
          (but consider it as a mandatory parameter).
@@ -39,16 +38,16 @@
     1. - [ ] Add an entity holding a planet's data - a table and ORM-like code.
     1. - [ ] Update `on-date` endpoint: try retrieving data from the local database.
 
-         If there is no local data, then request the external API first and store received data locally.
+        1. - [ ] If there is no local data, then request the external API first and store received data locally.
+        1. - [ ] Ensure API context (`http.Request.Context`) is passed to db-related functions: if a client's request
+             is terminated prematurely, the database discards unnecessary work.
     1. - [ ] Cover with tests (is already stored or not locally).
 
 ## Future development
 
 1. - [ ] Add versions to API like `/api/vX.Y`
-1. - [ ] Simplify writing API tests:
-     allow to specify just then ending part of an endpoint URI (like `/` instead of `/api/`),
-     but ensure tests load the whole router (not just the API sub-router).
 1. - [ ] Document the service's REST API with OpenAPI.
+1. - [ ] Document API error codes.
 1. - [ ] Add a queue manager / message broker / etc. to request external API(s) in background.
 
     Until data is received, API server should return something like "please, try again later" responses
@@ -62,6 +61,6 @@
     1. - [ ] Implement logging levels.
     1. - [ ] Add an option to additionally or exclusively log to files.
 1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
-1. - [ ] Cover [api.go](../src/internal/api/api.go) general functions with tests.
+1. - [ ] Cover [API](../src/internal/api) general functions with tests.
     1. - [ ] Stripping URI prefixes from API endpoints' URIs.
     1. - [ ] Edge cases with errors.

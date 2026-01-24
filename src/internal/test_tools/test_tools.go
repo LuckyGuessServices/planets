@@ -36,12 +36,15 @@ func globalSetUp() {
 	enforceEnvVars()
 	env.PanicIfEnvNotTest()
 
-	recreateTestDatabase()
-	databases.MigrateUp()
+	// TODO Uncomment when actual migrations are added.
+	//recreateTestDatabase()
+	//databases.MigrateUp()
 
 	// Do NOT open the actual pool between tests. Most tests are executed within a "synced bubble" ([synctest.Test]),
-	// and a db pool creation generates go-routines that should be placed within a test "bubble".
-	databases.ReplaceMainWithTxDB()
+	// and a db pool creation generates goroutines. If those goroutines are not created within a test "bubble",
+	// calling [synctest.Wait] will fail affected tests.
+	// TODO Uncomment when actual migrations are added.
+	//databases.ReplaceMainWithTxDB()
 }
 
 func enforceEnvVars() {
@@ -131,8 +134,14 @@ func setEnvVar(envVarName string, newValue string) {
 func RunInSyncBubble(t *testing.T, testFunction func(t *testing.T)) {
 	synctest.Test(t, func(t *testing.T) {
 		defer func() {
+			t.Helper()
+
 			if _, errCloseMain := databases.CloseMain(); errCloseMain != nil {
 				luglog.Panic("[DB] Failed to close Main(TxDB) pool: ", errCloseMain)
+			}
+
+			if panicVal := recover(); panicVal != nil {
+				t.Fatal("Test general failure due to panic:", panicVal)
 			}
 		}()
 

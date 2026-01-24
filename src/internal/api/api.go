@@ -1,59 +1,42 @@
 package api
 
-import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/LuckyGuessServices/planets/internal/api/endpoints"
-	"github.com/LuckyGuessServices/planets/internal/luglog"
-)
-
-// Router A complete router for the API server.
-func Router() *http.ServeMux {
-	router := http.NewServeMux()
-
-	// Add sub-routers:
-	router.Handle("/api/", http.StripPrefix("/api", RouterGeneral()))
-
-	return router
+type Response struct {
+	HTTPStatusCode int
+	Body           any
 }
 
-// RouterGeneral Router for general (for instance, not "admin") API endpoints.
-func RouterGeneral() *http.ServeMux {
-	router := http.NewServeMux()
-
-	router.HandleFunc("GET /{$}", decorateHandlerJSON(endpoints.Index))
-
-	return router
+func NewResponse() *Response {
+	return &Response{}
 }
 
-func decorateHandlerJSON(handler func(*http.Request) any) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		responseData := handler(r)
-
-		responseDataJSON, errMarshal := json.Marshal(responseData)
-		if errMarshal != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-
-			logHandlerError(errMarshal, "route '"+r.RequestURI+"', marshalling JSON response")
-
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		writeResponse(responseDataJSON, w, r)
+func NewErrorResponse(errorCode string) *Response {
+	return &Response{
+		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
+		Body: &jsonErrorCode{
+			ErrorCode: errorCode,
+		},
 	}
 }
 
-func writeResponse(responseData []byte, w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, errResponse := w.Write(responseData); errResponse != nil {
-		logHandlerError(errResponse, "route '"+r.RequestURI+"', writing response")
+func NewParameterErrorsResponse(parameterErrorCodes map[string]string) *Response {
+	errorCode := ErrInvalidParameters
 
-		return
+	return &Response{
+		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
+		Body: &struct {
+			jsonErrorCode
+			jsonParameterErrorCodes
+		}{
+			jsonErrorCode{ErrorCode: errorCode},
+			jsonParameterErrorCodes{ParameterErrorCodes: parameterErrorCodes},
+		},
 	}
 }
 
-func logHandlerError(err error, errPrefix string) {
-	luglog.Print(errPrefix+" ---> ", err)
+type jsonErrorCode struct {
+	ErrorCode string `json:"error"`
+}
+
+type jsonParameterErrorCodes struct {
+	ParameterErrorCodes map[string]string `json:"parameter_errors"`
 }

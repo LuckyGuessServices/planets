@@ -154,7 +154,7 @@ func openTxDB(driverName string, dataSourceName string, debugInfo string) *sql.D
 	env.PanicIfEnvNotTest()
 
 	dbTxDB := sql.OpenDB(txdb.New(driverName, dataSourceName))
-	ping(dbTxDB, fmt.Sprintf("%s(TxDB)", driverName), debugInfo)
+	ping(dbTxDB, driverName+"(TxDB)", debugInfo)
 
 	return dbTxDB
 }

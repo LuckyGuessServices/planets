@@ -1,6 +1,6 @@
 module github.com/LuckyGuessServices/planets
 
-go 1.25.5
+go 1.25.6
 
 require (
 	github.com/DATA-DOG/go-txdb v0.2.1

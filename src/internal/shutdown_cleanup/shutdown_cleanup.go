@@ -70,8 +70,8 @@ func Register(funcId string, funcHandler func()) {
 		// Do not let the application panic.
 		// Warn about an issue, but then let other registered functions to be executed.
 		defer func() {
-			if recoveredPanic := recover(); recoveredPanic != nil {
-				luglog.Printf("[Shutdown #%d] '%s' function panicked: %#v", funcIndex, funcId, recoveredPanic)
+			if panicVal := recover(); panicVal != nil {
+				luglog.Printf("[Shutdown #%d] '%s' function panicked: %#v", funcIndex, funcId, panicVal)
 			}
 		}()
 

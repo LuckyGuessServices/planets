@@ -142,7 +142,7 @@ func Config() *ConfigStruct {
 				luglog.Panic("Failed to determine project source root directory.")
 			}
 
-			appRootDir = general.Abs(fmt.Sprintf("%s/../..", filepath.Dir(thisFilePath)))
+			appRootDir = general.Abs(filepath.Dir(thisFilePath) + "/../..")
 		}
 
 		dbMainPortString := varValue(VarNameDBMainPort, defaultDBMainPort, false)
