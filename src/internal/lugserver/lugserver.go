@@ -33,8 +33,9 @@ func Serve() {
 
 	envConfig := env.Config()
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", envConfig.ServerListenHost(), envConfig.ServerListenPort()),
-		Handler: router.Create(),
+		Addr:              fmt.Sprintf("%s:%d", envConfig.ServerListenHost(), envConfig.ServerListenPort()),
+		Handler:           router.Create(),
+		ReadHeaderTimeout: 2 * time.Second,
 	}
 
 	defer func() {
@@ -60,6 +61,7 @@ func Serve() {
 		// We want to cancel the context ASAP:
 		errShutdown := func() error {
 			defer shutdownCtxCancel()
+
 			return server.Shutdown(shutdownCtx)
 		}()
 

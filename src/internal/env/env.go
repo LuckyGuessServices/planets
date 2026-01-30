@@ -136,7 +136,7 @@ func Config() *ConfigStruct {
 		}
 
 		appRootDir := varValue(VarNameApplicationFilesRootDirectory, "", true)
-		if "" == appRootDir {
+		if appRootDir == "" {
 			_, thisFilePath, _, isOk := runtime.Caller(0)
 			if !isOk {
 				luglog.Panic("Failed to determine project source root directory.")
@@ -230,7 +230,7 @@ func varValue(envVarName string, defaultValue string, allowEmpty bool) string {
 	}
 
 	value = strings.TrimSpace(value)
-	if !allowEmpty && "" == value {
+	if !allowEmpty && value == "" {
 		luglog.Panicf("'%v' env var must not be empty", envVarName)
 	}
 

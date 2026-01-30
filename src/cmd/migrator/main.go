@@ -9,5 +9,5 @@ func main() {
 	defer shutdown_cleanup.ExecuteStack()
 
 	databases.MigrateUp()
-	//databases.MigrateDownOne()
+	// databases.MigrateDownOne()
 }

@@ -1,8 +1,8 @@
 package api
 
 type Response struct {
-	HTTPStatusCode int
 	Body           any
+	HTTPStatusCode int
 }
 
 func NewResponse() *Response {
@@ -11,10 +11,10 @@ func NewResponse() *Response {
 
 func NewErrorResponse(errorCode string) *Response {
 	return &Response{
-		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
 		Body: &jsonErrorCode{
 			ErrorCode: errorCode,
 		},
+		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
 	}
 }
 
@@ -22,7 +22,6 @@ func NewParameterErrorsResponse(parameterErrorCodes map[string]string) *Response
 	errorCode := ErrInvalidParameters
 
 	return &Response{
-		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
 		Body: &struct {
 			jsonErrorCode
 			jsonParameterErrorCodes
@@ -30,6 +29,7 @@ func NewParameterErrorsResponse(parameterErrorCodes map[string]string) *Response
 			jsonErrorCode{ErrorCode: errorCode},
 			jsonParameterErrorCodes{ParameterErrorCodes: parameterErrorCodes},
 		},
+		HTTPStatusCode: HTTPStatusCodeByErrorCode(errorCode),
 	}
 }
 

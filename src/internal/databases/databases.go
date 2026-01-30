@@ -9,7 +9,6 @@ import (
 	"github.com/LuckyGuessServices/planets/internal/env"
 	"github.com/LuckyGuessServices/planets/internal/luglog"
 	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
-
 	_ "github.com/lib/pq"
 )
 

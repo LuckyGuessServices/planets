@@ -1,0 +1,117 @@
+version = "2"
+
+# https://golangci-lint.run/docs/configuration/file/#issues-configuration
+[issues]
+fix = false # Better add --fix manually when appropriate.
+
+# https://golangci-lint.run/docs/formatters/
+[formatters]
+enable = [
+    "gci",
+    "gofumpt",
+    "golines",
+]
+
+# https://golangci-lint.run/docs/formatters/configuration/#golines
+[formatters.settings.golines]
+max-len = 120
+
+# https://golangci-lint.run/docs/configuration/file/#linters-configuration
+[linters]
+default = "none"
+enable = [
+    "bodyclose",     # HTTP response body is not closed successfully.
+    "contextcheck",  # If a function uses a non-inherited context.
+    "errcheck",      # Detects unchecked errors in Go code. These unchecked errors can be critical bugs in some cases.
+    "errorlint",     # Finds code that can cause problems with the error wrapping scheme introduced in Go 1.13.
+    "exhaustive",    # If switch is not exhaustive enough.
+    "iface",         # Incorrect use of interfaces.
+    "ineffassign",   # If assignments to existing variables are not used.
+    "godoclint",     # Golang's documentation practice (godoc).
+    "gosec",         # Security problems.
+    "govet",         # Suspicious constructs.
+    "nlreturn",      # Ensures a new line before return and branch statements to increase code clarity.
+    "perfsprint",    # If fmt.Sprintf can be replaced with a faster alternative.
+    "sqlclosecheck", # If sql.Rows, sql.Stmt, sqlx.NamedStmt, pgx.Query are not closed.
+    "staticcheck",   # Set of rules from https://staticcheck.dev/
+    "testifylint",   # Set of rules from https://github.com/stretchr/testify
+    "testpackage",   # If tests are not located in separate "*_test" packages.
+    "tparallel",     # Detects inappropriate usage of t.Parallel() method in tests.
+    "unused",        # If there are unused constants, variables, functions and types.
+    "usestdlibvars", # Detects the possibility to use variables/constants from the Go standard library.
+]
+
+# https://golangci-lint.run/docs/linters/configuration/#errcheck
+[linters.settings.errcheck]
+check-blank = false
+check-type-assertions = true
+
+# https://golangci-lint.run/docs/linters/configuration/#exhaustive
+[linters.settings.exhaustive]
+default-case-required = true
+default-signifies-exhaustive = true
+
+# https://golangci-lint.run/docs/linters/configuration/#iface
+[linters.settings.iface]
+enable = [
+    "identical",
+    "opaque",
+    "unexported",
+    "unused",
+]
+
+# https://golangci-lint.run/docs/linters/configuration/#godoclint
+[linters.settings.godoclint]
+default = "none"
+enable = [
+    "deprecated",
+    "max-len",
+    "no-unused-link",
+    "pkg-doc",
+    "require-stdlib-doclink",
+    "single-pkg-doc",
+    "start-with-name",
+]
+options = { max-len = { length = 115 } }
+
+# https://golangci-lint.run/docs/linters/configuration/#gosec
+[linters.settings.gosec]
+excludes = [
+    "G101", # Look for hardcoded credentials
+]
+severity = "low"
+
+# https://golangci-lint.run/docs/linters/configuration/#govet
+[linters.settings.govet]
+enable-all = true
+disable = [
+    "fieldalignment",
+]
+
+# https://golangci-lint.run/docs/linters/configuration/#testifylint
+[linters.settings.testifylint]
+enable-all = true
+require-f-funcs = true
+
+# https://golangci-lint.run/docs/linters/configuration/#unused
+[linters.settings.unused]
+exported-fields-are-used = false
+field-writes-are-uses = false
+generated-is-used = true
+local-variables-are-used = false
+parameters-are-used = true
+post-statements-are-reads = false
+
+# https://golangci-lint.run/docs/linters/configuration/#usestdlibvars
+[linters.settings.usestdlibvars]
+http-method = true
+http-status-code = true
+time-date-month = true
+time-layout = true
+time-month = true
+time-weekday = true
+
+# https://golangci-lint.run/docs/configuration/file/#run-configuration
+[run]
+modules-download-mode = "readonly" # Forbids automatic go.mod update.
+tests = true # Includes tests files.

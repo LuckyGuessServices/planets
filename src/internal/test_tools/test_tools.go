@@ -36,15 +36,15 @@ func globalSetUp() {
 	enforceEnvVars()
 	env.PanicIfEnvNotTest()
 
+	recreateTestDatabase()
 	// TODO Uncomment when actual migrations are added.
-	//recreateTestDatabase()
-	//databases.MigrateUp()
+	// databases.MigrateUp()
 
 	// Do NOT open the actual pool between tests. Most tests are executed within a "synced bubble" ([synctest.Test]),
 	// and a db pool creation generates goroutines. If those goroutines are not created within a test "bubble",
 	// calling [synctest.Wait] will fail affected tests.
 	// TODO Uncomment when actual migrations are added.
-	//databases.ReplaceMainWithTxDB()
+	// databases.ReplaceMainWithTxDB()
 }
 
 func enforceEnvVars() {

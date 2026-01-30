@@ -1,7 +1,6 @@
 package shutdown_cleanup
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
@@ -97,15 +96,17 @@ func IsRegistered(funcId string) bool {
 // The register list is NOT shortened by this operation. Newly registered functions will occupy new register indices,
 // which will be reflected in the shutdown log like that:
 //
-// 	Register("shutdown A", func() { /* Do A */ })
-// 	Register("shutdown B", func() { /* Do B */ })
-// 	Unregister("shutdown B")
-// 	Register("shutdown C", func() { /* Do C */ })
-// 	ExecuteStack()
+//	Register("shutdown A", func() { /* Do A */ })
+//	Register("shutdown B", func() { /* Do B */ })
+//	Unregister("shutdown B")
+//	Register("shutdown C", func() { /* Do C */ })
+//	ExecuteStack()
 //
 // The code above generates logs:
-// 	... [Shutdown #3] shutdown C
-// 	... [Shutdown #1] shutdown A
+//
+//	... [Shutdown #3] shutdown C
+//	... [Shutdown #1] shutdown A
+//
 // Note the absence of "Shutdown #2" as its corresponding function slot was nullified during unregistering.
 func Unregister(funcId string) (func(), error) {
 	mu.Lock()
@@ -113,13 +114,11 @@ func Unregister(funcId string) (func(), error) {
 
 	funcSliceIndex, isIndexFound := cleanupFnIDMap[funcId]
 	if !isIndexFound {
-		return nil, errors.New(fmt.Sprintf("'%s' function was not registered", funcId))
+		return nil, fmt.Errorf("'%s' function was not registered", funcId)
 	}
 
 	if funcSliceIndex < 0 || funcSliceIndex >= len(cleanupFnSlice) {
-		return nil, errors.New(
-			fmt.Sprintf("Failed to retrieve '%s' function by slice index #%d.", funcId, funcSliceIndex),
-		)
+		return nil, fmt.Errorf("failed to retrieve '%s' function by slice index #%d", funcId, funcSliceIndex)
 	}
 
 	registeredFunc := cleanupFnSlice[funcSliceIndex]
