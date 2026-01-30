@@ -56,6 +56,79 @@
 1. - [x] Add https://github.com/stretchr/testify and other helpers to simplify tests.
 1. - [x] Catch all handlers' panics and turn into valid responses.
 1. - [x] Add base functionality to create valid responses representing client errors.
+1. - [x] Choose an ORM library.
+
+     **Requirements:**
+    1. Support PostgreSQL, at least. It's better, if also supports MongoDB, ClickHouse, MySQL, SQLite.
+    1. Scan data from DB into a go struct.
+    1. Populate go structs from SELECT queries (a single row and a rowset).
+    1. Populate ID in a go struct from INSERT.
+    1. Distinguish `NULL` (no value) from zero-like values (define go struct field as a pointer).
+       Allow to set a field to `NULL` value in golang code.
+    1. UPDATE only _selected fields_, which are detected _automatically_ from a record go struct.
+    1. Automatically set selected field (both in a go struct and database) to a runtime-calculated value
+       on CREATE or UPDATE (e.g. "updated_at" -> `time.Now()`).
+    1. Be fast (fewer reflections and other runtime stuff)
+       and/or lightweight (considering an application binary size).
+    1. Do _not_ force a (built-in) migration tool.
+
+     **Candidates:**
+    1. https://github.com/uptrace/bun
+
+       ✅ **Will be used.**
+
+       📊 _Tested._
+
+       Pros:
+        * Fits the majority of requirements.
+
+       Cons:
+        * Can not update only actually changed fields. You need to specify a fields list manually.
+    1. https://github.com/stephenafamo/bob
+
+       📊 _Tested._
+
+       Cons:
+        * Awful (lacking) documentation. Figure out what to start with and what you need. Dive into code yourself
+          to understand how to add the module itself and additional modules.
+        * Requires 2 structs representing a record instead of 1: the first is for fields mapping, the second is for
+          setting values.
+        * Requires complex multiline code for a simple query: create select struct, insert it into another special
+          method, provide at least one record struct (which must implement several interfaces).
+        * Requires lots of code to work with "models". Can generate it itself... But you still do not figure out how to
+          use this monstrosity (remember the lack of documentation).
+    1. https://github.com/go-reform/reform
+
+       📊 _Tested._
+
+       Cons:
+        * Lacking documentation. Google to find out how actually install the package.
+        * Compile-invalid generated code (if you dared to define your own `String()` function for a struct).
+        * Forces SQL queries logging with a separate logger. You can not get a generated query whenever you like
+          (no "dry-run" approach).
+            * All operations are logged twice (like "ongoing" and "actually made" with time).
+              There is no way to disable it.
+        * Can not update only actually changed fields. You need to specify a fields list manually.
+    1. https://github.com/ent/ent
+
+       Cons:
+        * Can not update only actually changed fields. You need to specify a fields list manually.
+        * Generates a lot of code that slows down compilation time and increase a binary size.
+        * Looks to complex to work with.
+    1. https://github.com/go-gorm/gorm
+
+       📊 _Tested._
+
+       Pros:
+        * Supports named arguments (see [docs](https://gorm.io/docs/advanced_query.html#Named-Argument)).
+
+       Cons:
+        * Only partial support for updating only fields detected automatically (only non-zero fields). If at least one
+          field is must be set to zero value, you still need to specify a fields list manually.
+        * Relies heavily on runtime reflections.
+        * Requires its own logger setup to log SQL queries. Otherwise, requires creating a "session" to debug
+          a query builder and output queries without actually making those.
+        * Passing a context to a query requires more complex query building.
 
 ## Misc
 
