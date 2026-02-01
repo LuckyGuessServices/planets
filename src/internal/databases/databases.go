@@ -2,82 +2,24 @@ package databases
 
 import (
 	"database/sql"
-	"fmt"
 	"sync"
 
-	"github.com/DATA-DOG/go-txdb"
 	"github.com/LuckyGuessServices/planets/internal/env"
 	"github.com/LuckyGuessServices/planets/internal/luglog"
 	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
-	_ "github.com/lib/pq"
 )
 
-const DBMainDriverName = "postgres"
-
-type DBMainConfig struct {
-	ClientEncoding string
-	ConnectTimeout int
-	DBName         string
-	Host           string
-	Port           int
-	SSLMode        string
-	TimeZone       string
-	UserName       string
-	UserPassword   string
-}
-
-func (config *DBMainConfig) String() string {
-	return config.DebugInfo()
-}
-
-func (config *DBMainConfig) DSN() string {
-	return config.dsnInternal(false)
-}
-
-func (config *DBMainConfig) DebugInfo() string {
-	return config.dsnInternal(true)
-}
-
-func (config *DBMainConfig) dsnInternal(hidePassword bool) string {
-	var password string
-	if hidePassword {
-		password = "(hidden)"
-	} else {
-		password = config.UserPassword
-	}
-
-	return fmt.Sprintf(
-		"client_encoding=%s connect_timeout=%d dbname=%s host=%s port=%d sslmode=%s TimeZone=%s user=%s password=%s",
-		config.ClientEncoding,
-		config.ConnectTimeout,
-		config.DBName,
-		config.Host,
-		config.Port,
-		config.SSLMode,
-		config.TimeZone,
-		config.UserName,
-		password,
-	)
-}
-
-func NewDBMainConfig() *DBMainConfig {
-	return &DBMainConfig{
-		ClientEncoding: "UTF8",
-		ConnectTimeout: 2,
-		SSLMode:        "disable",
-		TimeZone:       "UTC",
-	}
-}
-
-var dbMain = struct {
-	dbMutex sync.Mutex
-	dbPool  *sql.DB
-	// Used for [shutdown_cleanup.Register] and [shutdown_cleanup.Unregister].
-	shutdownFuncId            string
+type dbMainType struct {
+	mutex                     sync.Mutex
+	pool                      *sql.DB
 	replaceNormalPoolWithTxDB bool
-}{
-	dbPool:                    nil,
-	shutdownFuncId:            "DB: close Main pool",
+
+	// Used for [shutdown_cleanup.Register] and [shutdown_cleanup.Unregister].
+	shutdownFuncId string
+}
+
+var dbMain = dbMainType{
+	pool:                      nil,
 	replaceNormalPoolWithTxDB: false,
 }
 
@@ -85,11 +27,11 @@ var dbMain = struct {
 // then firstly creates it and stores in a local variable for future function calls.
 // The pool is closed automatically during the application shutdown (see [shutdown_cleanup.Register]).
 func Main() *sql.DB {
-	dbMain.dbMutex.Lock()
-	defer dbMain.dbMutex.Unlock()
+	dbMain.mutex.Lock()
+	defer dbMain.mutex.Unlock()
 
-	if nil != dbMain.dbPool {
-		return dbMain.dbPool
+	if nil != dbMain.pool {
+		return dbMain.pool
 	}
 
 	envConfig := env.Config()
@@ -102,13 +44,14 @@ func Main() *sql.DB {
 	dbConfigDebugInfo := dbConfig.DebugInfo()
 
 	if dbMain.replaceNormalPoolWithTxDB {
-		dbMain.dbPool = openTxDB(DBMainDriverName, dbConfig.DSN(), dbConfigDebugInfo)
+		dbMain.pool = OpenAndPingTxDB(DBMainDriverName, dbConfig.DSN(), dbConfigDebugInfo)
 	} else {
-		dbMain.dbPool = OpenAndPing(DBMainDriverName, dbConfig.DSN(), dbConfigDebugInfo)
+		dbMain.pool = OpenAndPing(DBMainDriverName, dbConfig.DSN(), dbConfigDebugInfo)
 	}
 
+	dbMain.shutdownFuncId = "DB: close Main pool"
 	if !dbMain.replaceNormalPoolWithTxDB && !shutdown_cleanup.IsRegistered(dbMain.shutdownFuncId) {
-		shutdown_cleanup.Register(dbMain.shutdownFuncId, func() {
+		errRegister := shutdown_cleanup.Register(dbMain.shutdownFuncId, func() {
 			wasOpened, err := CloseMain()
 			if err != nil {
 				luglog.Print("[DB] Failed to close Main pool: ", err)
@@ -118,60 +61,31 @@ func Main() *sql.DB {
 				luglog.Print("[DB] Main pool is closed.")
 			}
 		})
+		if errRegister != nil {
+			luglog.Panic("[DB] Failed to register Main pool shutdown function: ", errRegister)
+		}
 	}
 	if !dbMain.replaceNormalPoolWithTxDB {
 		luglog.Print("[DB] Main pool is initialized: ", dbConfigDebugInfo)
 	}
 
-	return dbMain.dbPool
+	return dbMain.pool
 }
 
 // CloseMain closes the main db pool. The internal variable holding a pointer to the pool is emptied (`nil`)
 // even if [sql.DB.Close] returns an error.
-func CloseMain() (wasOpened bool, err error) {
-	dbMain.dbMutex.Lock()
-	defer dbMain.dbMutex.Unlock()
+func CloseMain() (bool, error) {
+	dbMain.mutex.Lock()
+	defer dbMain.mutex.Unlock()
 
-	if nil == dbMain.dbPool {
+	if nil == dbMain.pool {
 		return false, nil
 	}
 
-	err = dbMain.dbPool.Close()
-	dbMain.dbPool = nil
+	err := dbMain.pool.Close()
+	dbMain.pool = nil
 
 	return true, err
-}
-
-func OpenAndPing(driverName string, dataSourceName string, debugInfo string) *sql.DB {
-	db := open(driverName, dataSourceName, debugInfo)
-	ping(db, driverName, debugInfo)
-
-	return db
-}
-
-func openTxDB(driverName string, dataSourceName string, debugInfo string) *sql.DB {
-	env.PanicIfEnvNotTest()
-
-	dbTxDB := sql.OpenDB(txdb.New(driverName, dataSourceName))
-	ping(dbTxDB, driverName+"(TxDB)", debugInfo)
-
-	return dbTxDB
-}
-
-func open(driverName string, dataSourceName string, debugInfo string) *sql.DB {
-	db, err := sql.Open(driverName, dataSourceName)
-	if err != nil {
-		luglog.Panicf("Unable to open '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
-	}
-
-	return db
-}
-
-func ping(db *sql.DB, driverName string, debugInfo string) {
-	if err := db.Ping(); err != nil {
-		_ = db.Close()
-		luglog.Panicf("Unable to ping '%s' database. Error: '%v'; DSN: '%s'", driverName, err, debugInfo)
-	}
 }
 
 // ReplaceMainWithTxDB closes the current db pool stored in an unexported global variable and enables [Main]
@@ -185,11 +99,27 @@ func ping(db *sql.DB, driverName string, debugInfo string) {
 func ReplaceMainWithTxDB() {
 	env.PanicIfEnvNotTest()
 
-	dbMain.replaceNormalPoolWithTxDB = true
+	// The function is intended to be called once before all tests launch. So there should be no concurrency.
+	// But if concurrency actually happens, let's rely on a mutex... However, unlock it as soon as necessary checks
+	// are made. If unlocking too late, then closing the original database pool will deadlock (requests the same mutex).
+	func() {
+		dbMain.mutex.Lock()
+		defer dbMain.mutex.Unlock()
 
-	closeMainFunc, err := shutdown_cleanup.Unregister(dbMain.shutdownFuncId)
-	if err != nil {
-		luglog.Panicf("Failed to unregister '%s': %v", dbMain.shutdownFuncId, err)
+		if dbMain.replaceNormalPoolWithTxDB {
+			luglog.Panic("[DB] TxDB driver was requested already.")
+		}
+		dbMain.replaceNormalPoolWithTxDB = true
+
+		// Stop here, if for some reason the pool has been already closed.
+		if dbMain.pool == nil {
+			return
+		}
+	}()
+
+	closeMainFunc, errUnregister := shutdown_cleanup.Unregister(dbMain.shutdownFuncId)
+	if errUnregister != nil {
+		luglog.Panicf("Failed to unregister '%s': %v", dbMain.shutdownFuncId, errUnregister)
 	}
 	closeMainFunc()
 }

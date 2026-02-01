@@ -1,6 +1,7 @@
 package shutdown_cleanup
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -13,6 +14,12 @@ var (
 	cleanupFnSlice []func()
 	cleanupFnIDMap = make(map[string]int)
 )
+
+func panicIfAlreadyExecuted() {
+	if isExecuted {
+		luglog.Panic("Unable to operate the cleanup registry: the cleanup itself is executed already!")
+	}
+}
 
 // ExecuteStack executes registered functions in LIFO order - starting from the function registered last.
 func ExecuteStack() {
@@ -50,18 +57,23 @@ func ExecuteStack() {
 // Register adds a function to a list fo functions called during application shutdown.
 // Call [ExecuteStack] inside the "main()" defer function to invoke all registered functions.
 //
+// Panics, if the cleanup has been already executed.
+//
 // Each function added to the list is decorated with a deferred panic recovery. That means your custom functions may
 // panic, but that will not prevent execution of other registered functions.
-func Register(funcId string, funcHandler func()) {
+func Register(funcId string, funcHandler func()) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if isExecuted {
-		panic("Unable to add a shutdown cleanup function: the cleanup itself is executed already!")
+	panicIfAlreadyExecuted()
+
+	if len(funcId) < 1 {
+		return errors.New("funcId is not defined")
 	}
 
+	// Do nothing, if a function has been registered already.
 	if _, ok := cleanupFnIDMap[funcId]; ok {
-		return
+		return nil
 	}
 
 	funcIndex := len(cleanupFnSlice)
@@ -78,6 +90,8 @@ func Register(funcId string, funcHandler func()) {
 	}
 	cleanupFnSlice = append(cleanupFnSlice, decoratedFuncHandler)
 	cleanupFnIDMap[funcId] = funcIndex
+
+	return nil
 }
 
 func IsRegistered(funcId string) bool {
@@ -92,6 +106,8 @@ func IsRegistered(funcId string) bool {
 // Unregister removes function from the register list and returns it (so you could call it manually if needed).
 // Failure in retrieving a function handler in any way generates an error
 // (for instance, if a function was not registered).
+//
+// Panics, if the cleanup has been already executed.
 //
 // The register list is NOT shortened by this operation. Newly registered functions will occupy new register indices,
 // which will be reflected in the shutdown log like that:
@@ -111,6 +127,12 @@ func IsRegistered(funcId string) bool {
 func Unregister(funcId string) (func(), error) {
 	mu.Lock()
 	defer mu.Unlock()
+
+	panicIfAlreadyExecuted()
+
+	if len(funcId) < 1 {
+		return nil, errors.New("funcId is not defined")
+	}
 
 	funcSliceIndex, isIndexFound := cleanupFnIDMap[funcId]
 	if !isIndexFound {

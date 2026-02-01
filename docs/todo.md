@@ -72,6 +72,12 @@
 
 1. - [ ] Add gRPC (https://grpc.io/) as a second API (with the same functionality; just for education)
      Or implement it as a single API server in another microservice.
+1. - [ ] Make it possible for `databases.Main()` to return `pgxpool.Pool` instead of `sql.DB`.
+     But it should work with `DATA-DOG/go-txdb` as well (e.g. via a common interface).
+
+     The caveat: it should work with `DATA-DOG/go-txdb` as well. To achieve this, try implementing a common interface
+     (as a return type hint). Otherwise, replace `DATA-DOG/go-txdb` with your own implementation based on `pgxpool`
+     (see [this post](https://github.com/jackc/pgx/issues/697#issuecomment-604035545)).
 1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
     1. - [ ] Implement logging levels.
     1. - [ ] Add an option to additionally or exclusively log to files.

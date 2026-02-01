@@ -1,6 +1,7 @@
 package test_tools
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -63,14 +64,11 @@ func recreateTestDatabase() {
 	dbConfig.UserName = envConfig.DBMainRootUsername()
 	dbConfig.UserPassword = envConfig.DBMainRootPassword()
 
-	dbMainRoot := databases.OpenAndPing(databases.DBMainDriverName, dbConfig.DSN(), dbConfig.DebugInfo())
+	ctx := context.Background()
+	dbMainRoot := databases.OpenAndPingPGX(ctx, dbConfig.DSN(), dbConfig.DebugInfo())
 	defer func() {
-		err := dbMainRoot.Close()
-		if err != nil {
-			luglog.Panic("[DB] Failed to close Main 'root' pool: ", err)
-		} else {
-			luglog.Print("[DB] Main 'root' pool is closed.")
-		}
+		dbMainRoot.Close()
+		luglog.Print("[DB] Main 'root' pool is closed.")
 	}()
 	luglog.Print("[DB] Main 'root' pool is initialized: ", dbConfig.DebugInfo())
 
@@ -79,6 +77,7 @@ func recreateTestDatabase() {
 	// DATABASE RECREATION:
 
 	_, errTerminateConnections := dbMainRoot.Exec(
+		ctx,
 		fmt.Sprintf(
 			`
 				SELECT pg_terminate_backend(pg_stat_activity.pid)
@@ -96,12 +95,16 @@ func recreateTestDatabase() {
 		)
 	}
 
-	_, errDropDatabase := dbMainRoot.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\"", envConfig.DBMainDatabaseName()))
+	_, errDropDatabase := dbMainRoot.Exec(
+		ctx,
+		fmt.Sprintf("DROP DATABASE IF EXISTS \"%s\"", envConfig.DBMainDatabaseName()),
+	)
 	if errDropDatabase != nil {
 		luglog.Panicf("Failed to drop database '%s': %v", envConfig.DBMainDatabaseName(), errDropDatabase)
 	}
 
 	_, errCreateDatabase := dbMainRoot.Exec(
+		ctx,
 		fmt.Sprintf("CREATE DATABASE \"%s\" OWNER \"%s\"", envConfig.DBMainDatabaseName(), envConfig.DBMainUsername()),
 	)
 	if errCreateDatabase != nil {
