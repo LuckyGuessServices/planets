@@ -18,34 +18,34 @@ const (
 
 	VarNameApplicationFilesRootDirectory = "LUG_PLANETS_APP_FILES_DIR"
 
-	// DBMain
+	// DBCore
 
-	VarNameDBMainDatabaseName     string = "LUG_PLANETS_DBMAIN_DBNAME"
-	defaultDBMainDatabaseName     string = "planets"
-	defaultDBMainDatabaseNameTest string = "planets_test"
+	VarNameDBCoreDatabaseName     string = "LUG_PLANETS_DBCORE_DBNAME"
+	defaultDBCoreDatabaseName     string = "planets"
+	defaultDBCoreDatabaseNameTest string = "planets_test"
 
-	VarNameDBMainHost string = "LUG_PLANETS_DBMAIN_HOST"
-	defaultDBMainHost string = "127.0.0.1"
+	VarNameDBCoreHost string = "LUG_PLANETS_DBCORE_HOST"
+	defaultDBCoreHost string = "127.0.0.1"
 
-	VarNameDBMainPort string = "LUG_PLANETS_DBMAIN_PORT"
-	defaultDBMainPort string = "5400"
+	VarNameDBCorePort string = "LUG_PLANETS_DBCORE_PORT"
+	defaultDBCorePort string = "5400"
 
-	VarNameDBMainUsername     string = "LUG_PLANETS_DBMAIN_USERNAME"
-	defaultDBMainUsername     string = "planets_user"
-	defaultDBMainUsernameTest string = "planets_test_user"
+	VarNameDBCoreUsername     string = "LUG_PLANETS_DBCORE_USERNAME"
+	defaultDBCoreUsername     string = "planets_user"
+	defaultDBCoreUsernameTest string = "planets_test_user"
 
-	VarNameDBMainPassword     string = "LUG_PLANETS_DBMAIN_PASSWORD"
-	defaultDBMainPassword     string = "planets_pass"
-	defaultDBMainPasswordTest string = "planets_test_pass"
+	VarNameDBCorePassword     string = "LUG_PLANETS_DBCORE_PASSWORD"
+	defaultDBCorePassword     string = "planets_pass"
+	defaultDBCorePasswordTest string = "planets_test_pass"
 
-	VarNameDBMainRootDatabaseName string = "LUG_PLANETS_DBMAIN_ROOT_DBNAME"
-	defaultDBMainRootDatabaseName string = "postgres"
+	VarNameDBCoreRootDatabaseName string = "LUG_PLANETS_DBCORE_ROOT_DBNAME"
+	defaultDBCoreRootDatabaseName string = "postgres"
 
-	VarNameDBMainRootUsername string = "LUG_PLANETS_DBMAIN_ROOT_USERNAME"
-	defaultDBMainRootUsername string = "root_user"
+	VarNameDBCoreRootUsername string = "LUG_PLANETS_DBCORE_ROOT_USERNAME"
+	defaultDBCoreRootUsername string = "root_user"
 
-	VarNameDBMainRootPassword string = "LUG_PLANETS_DBMAIN_ROOT_PASSWORD"
-	defaultDBMainRootPassword string = "root_pass"
+	VarNameDBCoreRootPassword string = "LUG_PLANETS_DBCORE_ROOT_PASSWORD"
+	defaultDBCoreRootPassword string = "root_pass"
 
 	// SERVER
 
@@ -61,14 +61,14 @@ type ConfigStruct struct {
 	applicationEnvironment        ApplicationEnvironmentType
 	applicationFilesRootDirectory string
 
-	dbMainDatabaseName     string
-	dbMainHost             string
-	dbMainPort             int
-	dbMainUsername         string
-	dbMainPassword         string
-	dbMainRootDatabaseName string
-	dbMainRootUsername     string
-	dbMainRootPassword     string
+	dbCoreDatabaseName     string
+	dbCoreHost             string
+	dbCorePort             int
+	dbCoreUsername         string
+	dbCorePassword         string
+	dbCoreRootDatabaseName string
+	dbCoreRootUsername     string
+	dbCoreRootPassword     string
 
 	serverListenHost string
 	serverListenPort int
@@ -82,36 +82,36 @@ func (config *ConfigStruct) ApplicationFilesRootDirectory() string {
 	return config.applicationFilesRootDirectory
 }
 
-func (config *ConfigStruct) DBMainDatabaseName() string {
-	return config.dbMainDatabaseName
+func (config *ConfigStruct) DBCoreDatabaseName() string {
+	return config.dbCoreDatabaseName
 }
 
-func (config *ConfigStruct) DBMainHost() string {
-	return config.dbMainHost
+func (config *ConfigStruct) DBCoreHost() string {
+	return config.dbCoreHost
 }
 
-func (config *ConfigStruct) DBMainPort() int {
-	return config.dbMainPort
+func (config *ConfigStruct) DBCorePort() int {
+	return config.dbCorePort
 }
 
-func (config *ConfigStruct) DBMainUsername() string {
-	return config.dbMainUsername
+func (config *ConfigStruct) DBCoreUsername() string {
+	return config.dbCoreUsername
 }
 
-func (config *ConfigStruct) DBMainPassword() string {
-	return config.dbMainPassword
+func (config *ConfigStruct) DBCorePassword() string {
+	return config.dbCorePassword
 }
 
-func (config *ConfigStruct) DBMainRootDatabaseName() string {
-	return config.dbMainRootDatabaseName
+func (config *ConfigStruct) DBCoreRootDatabaseName() string {
+	return config.dbCoreRootDatabaseName
 }
 
-func (config *ConfigStruct) DBMainRootUsername() string {
-	return config.dbMainRootUsername
+func (config *ConfigStruct) DBCoreRootUsername() string {
+	return config.dbCoreRootUsername
 }
 
-func (config *ConfigStruct) DBMainRootPassword() string {
-	return config.dbMainRootPassword
+func (config *ConfigStruct) DBCoreRootPassword() string {
+	return config.dbCoreRootPassword
 }
 
 func (config *ConfigStruct) ServerListenHost() string {
@@ -128,72 +128,74 @@ var config *ConfigStruct
 // If you want to alter some values before usage within the application, do not call this function
 // until all necessary [os.Setenv] calls are made.
 func Config() *ConfigStruct {
-	if nil == config {
-		appEnvRaw := varValue(VarNameApplicationEnvironment, string(defaultApplicationEnvironment), false)
-		appEnv := ApplicationEnvironmentType(appEnvRaw)
-		if err := validateAppEnv(appEnv); err != nil {
-			luglog.Panic(err)
+	if config != nil {
+		return config
+	}
+
+	appEnvRaw := varValue(VarNameApplicationEnvironment, string(defaultApplicationEnvironment), false)
+	appEnv := ApplicationEnvironmentType(appEnvRaw)
+	if err := validateAppEnv(appEnv); err != nil {
+		luglog.Panic(err)
+	}
+
+	appRootDir := varValue(VarNameApplicationFilesRootDirectory, "", true)
+	if appRootDir == "" {
+		_, thisFilePath, _, isOk := runtime.Caller(0)
+		if !isOk {
+			luglog.Panic("Failed to determine project source root directory.")
 		}
 
-		appRootDir := varValue(VarNameApplicationFilesRootDirectory, "", true)
-		if appRootDir == "" {
-			_, thisFilePath, _, isOk := runtime.Caller(0)
-			if !isOk {
-				luglog.Panic("Failed to determine project source root directory.")
-			}
+		appRootDir = general.Abs(filepath.Dir(thisFilePath) + "/../..")
+	}
 
-			appRootDir = general.Abs(filepath.Dir(thisFilePath) + "/../..")
-		}
+	dbCorePortString := varValue(VarNameDBCorePort, defaultDBCorePort, false)
+	dbCorePortInt, errDBCorePortConv := strconv.Atoi(dbCorePortString)
+	if errDBCorePortConv != nil {
+		luglog.Panicf(
+			"Failed to convert CORE db port value '%s' to an integer from env var '%s': %v",
+			dbCorePortString,
+			VarNameDBCorePort,
+			errDBCorePortConv,
+		)
+	}
 
-		dbMainPortString := varValue(VarNameDBMainPort, defaultDBMainPort, false)
-		dbMainPortInt, errDBMainPortConv := strconv.Atoi(dbMainPortString)
-		if errDBMainPortConv != nil {
-			luglog.Panicf(
-				"Failed to convert DBMain port value '%s' to an integer from env var '%s': %v",
-				dbMainPortString,
-				VarNameDBMainPort,
-				errDBMainPortConv,
-			)
-		}
+	serverPortString := varValue(VarNameServerListenPort, defaultServerListenPort, false)
+	serverPortInt, errServerPortConv := strconv.Atoi(serverPortString)
+	if errServerPortConv != nil {
+		luglog.Panicf(
+			"Failed to convert server port value '%s' to an integer from env var '%s': %v",
+			serverPortString,
+			VarNameServerListenPort,
+			errServerPortConv,
+		)
+	}
 
-		serverPortString := varValue(VarNameServerListenPort, defaultServerListenPort, false)
-		serverPortInt, errServerPortConv := strconv.Atoi(serverPortString)
-		if errServerPortConv != nil {
-			luglog.Panicf(
-				"Failed to convert server port value '%s' to an integer from env var '%s': %v",
-				serverPortString,
-				VarNameServerListenPort,
-				errServerPortConv,
-			)
-		}
+	var dbCoreDatabaseName, dbCoreUsername, dbCorePassword string
+	if isTestInternal(appEnv) {
+		dbCoreDatabaseName = varValue(VarNameDBCoreDatabaseName, defaultDBCoreDatabaseNameTest, false)
+		dbCoreUsername = varValue(VarNameDBCoreUsername, defaultDBCoreUsernameTest, false)
+		dbCorePassword = varValue(VarNameDBCorePassword, defaultDBCorePasswordTest, false)
+	} else {
+		dbCoreDatabaseName = varValue(VarNameDBCoreDatabaseName, defaultDBCoreDatabaseName, false)
+		dbCoreUsername = varValue(VarNameDBCoreUsername, defaultDBCoreUsername, false)
+		dbCorePassword = varValue(VarNameDBCorePassword, defaultDBCorePassword, false)
+	}
 
-		var dbMainDatabaseName, dbMainUsername, dbMainPassword string
-		if ApplicationEnvironmentTest == appEnv {
-			dbMainDatabaseName = varValue(VarNameDBMainDatabaseName, defaultDBMainDatabaseNameTest, false)
-			dbMainUsername = varValue(VarNameDBMainUsername, defaultDBMainUsernameTest, false)
-			dbMainPassword = varValue(VarNameDBMainPassword, defaultDBMainPasswordTest, false)
-		} else {
-			dbMainDatabaseName = varValue(VarNameDBMainDatabaseName, defaultDBMainDatabaseName, false)
-			dbMainUsername = varValue(VarNameDBMainUsername, defaultDBMainUsername, false)
-			dbMainPassword = varValue(VarNameDBMainPassword, defaultDBMainPassword, false)
-		}
+	config = &ConfigStruct{
+		applicationEnvironment:        appEnv,
+		applicationFilesRootDirectory: appRootDir,
 
-		config = &ConfigStruct{
-			applicationEnvironment:        appEnv,
-			applicationFilesRootDirectory: appRootDir,
+		dbCoreDatabaseName:     dbCoreDatabaseName,
+		dbCoreHost:             varValue(VarNameDBCoreHost, defaultDBCoreHost, false),
+		dbCorePort:             dbCorePortInt,
+		dbCoreUsername:         dbCoreUsername,
+		dbCorePassword:         dbCorePassword,
+		dbCoreRootDatabaseName: varValue(VarNameDBCoreRootDatabaseName, defaultDBCoreRootDatabaseName, false),
+		dbCoreRootUsername:     varValue(VarNameDBCoreRootUsername, defaultDBCoreRootUsername, false),
+		dbCoreRootPassword:     varValue(VarNameDBCoreRootPassword, defaultDBCoreRootPassword, false),
 
-			dbMainDatabaseName:     dbMainDatabaseName,
-			dbMainHost:             varValue(VarNameDBMainHost, defaultDBMainHost, false),
-			dbMainPort:             dbMainPortInt,
-			dbMainUsername:         dbMainUsername,
-			dbMainPassword:         dbMainPassword,
-			dbMainRootDatabaseName: varValue(VarNameDBMainRootDatabaseName, defaultDBMainRootDatabaseName, false),
-			dbMainRootUsername:     varValue(VarNameDBMainRootUsername, defaultDBMainRootUsername, false),
-			dbMainRootPassword:     varValue(VarNameDBMainRootPassword, defaultDBMainRootPassword, false),
-
-			serverListenHost: varValue(VarNameServerListenHost, defaultServerListenHost, true),
-			serverListenPort: serverPortInt,
-		}
+		serverListenHost: varValue(VarNameServerListenHost, defaultServerListenHost, true),
+		serverListenPort: serverPortInt,
 	}
 
 	return config
@@ -216,10 +218,29 @@ func validateAppEnv(appEnvValue ApplicationEnvironmentType) error {
 	}
 }
 
+func IsTest() bool {
+	return isTestInternal(Config().ApplicationEnvironment())
+}
+
+func isTestInternal(appEnv ApplicationEnvironmentType) bool {
+	return appEnv == ApplicationEnvironmentTest
+}
+
+func PanicIfEnvIsTest() {
+	if IsTest() {
+		luglog.Panic(
+			"Application environment must be any of non-test environments. Current: ",
+			Config().ApplicationEnvironment(),
+		)
+	}
+}
+
 func PanicIfEnvNotTest() {
-	appEnv := Config().ApplicationEnvironment()
-	if ApplicationEnvironmentTest != appEnv {
-		luglog.Panicf("Invalid application environment: '%v'. Expected: '%v' ", appEnv, ApplicationEnvironmentTest)
+	if !IsTest() {
+		luglog.Panic(
+			"Application environment must be any of test environments. Current: ",
+			Config().ApplicationEnvironment(),
+		)
 	}
 }
 

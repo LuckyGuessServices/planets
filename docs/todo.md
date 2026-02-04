@@ -8,7 +8,7 @@
 ## MVP
 
 1. - [ ] Store planet's data in a local database.
-    1. - [ ] Make a sort of setup:
+    1. - [x] Make a sort of setup:
         * Add a wrapper to set pointers in one line:
 
           ```
@@ -70,18 +70,19 @@
 
 ## Unscheduled optional tasks
 
+1. - [ ] Add a lint check to ensure every test package contains a standardized TestMain call.
+1. - [ ] Alter mocked time for all tests:
+     "a second later" sleep should produce cases of a leap second and / or an extra hour (winter/summer).
 1. - [ ] Add gRPC (https://grpc.io/) as a second API (with the same functionality; just for education)
      Or implement it as a single API server in another microservice.
-1. - [ ] Make it possible for `databases.Main()` to return `pgxpool.Pool` instead of `sql.DB`.
+1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
+    1. - [ ] Implement logging levels.
+    1. - [ ] Add an option to additionally or exclusively log to files.
+1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
+1. - [ ] Make it possible for `databases.Core()` to return `pgxpool.Pool` instead of `sql.DB`.
      But it should work with `DATA-DOG/go-txdb` as well (e.g. via a common interface).
 
      The caveat: it should work with `DATA-DOG/go-txdb` as well. To achieve this, try implementing a common interface
      (as a return type hint). Otherwise, replace `DATA-DOG/go-txdb` with your own implementation based on `pgxpool`
      (see [this post](https://github.com/jackc/pgx/issues/697#issuecomment-604035545)).
-1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
-    1. - [ ] Implement logging levels.
-    1. - [ ] Add an option to additionally or exclusively log to files.
-1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
-1. - [ ] Cover [API](../src/internal/api) general functions with tests.
-    1. - [ ] Stripping URI prefixes from API endpoints' URIs.
-    1. - [ ] Edge cases with errors.
+1. - [ ] Cover [API](../src/internal/api) general functions (and edge cases with errors) with tests.

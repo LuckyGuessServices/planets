@@ -8,7 +8,7 @@ import (
 
 func MigrateUp() {
 	err := goose.Up(
-		Main(),
+		Core().DB,
 		paths.MigrationScriptsDir(),
 		goose.WithAllowMissing(),
 	)
@@ -19,7 +19,7 @@ func MigrateUp() {
 
 func MigrateDownOne() {
 	err := goose.Down(
-		Main(),
+		Core().DB,
 		paths.MigrationScriptsDir(),
 	)
 	if err != nil {

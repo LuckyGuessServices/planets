@@ -15,7 +15,7 @@ func Index(_ *http.Request) *api.Response {
 		ServiceCurrentTime string `json:"service_current_time"`
 	}{
 		ServiceName:        general.ServiceName,
-		ServiceCurrentTime: time.Now().UTC().Format(general.ApiDateTimeTz),
+		ServiceCurrentTime: time.Now().UTC().Format(time.RFC3339),
 	}
 
 	return response

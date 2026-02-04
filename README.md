@@ -1,5 +1,5 @@
 
-# LuG planets
+# lug-planets
 
 Read also: [TODO](docs/todo.md)
 

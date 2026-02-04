@@ -19,8 +19,8 @@ func TestIndex(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 
 		bodyExpected := map[string]any{
-			"service_name":         "LuG planets",
-			"service_current_time": "2000-01-01T00:00:00+00:00",
+			"service_name":         "lug-planets",
+			"service_current_time": "2000-01-01T00:00:00Z",
 		}
 		helper.RequireJSONResponse(t, bodyExpected, response.Body)
 	})
