@@ -68,7 +68,6 @@ enable = [
     "max-len",
     "no-unused-link",
     "pkg-doc",
-    "require-stdlib-doclink",
     "single-pkg-doc",
     "start-with-name",
 ]

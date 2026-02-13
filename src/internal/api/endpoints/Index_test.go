@@ -31,10 +31,10 @@ func TestIndexNoSlashRedirect(t *testing.T) {
 	test_tools.RunInSyncBubble(t, func(t *testing.T) {
 		response := helper.QueryApi(t, "GET", "")
 
-		assert.Equal(t, http.StatusMovedPermanently, response.Code)
+		assert.Equal(t, http.StatusTemporaryRedirect, response.Code)
 		assert.Equal(
 			t,
-			fmt.Sprintf("<a href=\"%s/\">Moved Permanently</a>.\n\n", router.PrefixGeneral),
+			fmt.Sprintf("<a href=\"%s/\">Temporary Redirect</a>.\n\n", router.PrefixGeneral),
 			response.Body.String(),
 		)
 	})
