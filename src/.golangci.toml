@@ -25,7 +25,6 @@ enable = [
     "errcheck",      # Detects unchecked errors in Go code. These unchecked errors can be critical bugs in some cases.
     "errorlint",     # Finds code that can cause problems with the error wrapping scheme introduced in Go 1.13.
     "exhaustive",    # If switch is not exhaustive enough.
-    "iface",         # Incorrect use of interfaces.
     "ineffassign",   # If assignments to existing variables are not used.
     "godoclint",     # Golang's documentation practice (godoc).
     "gosec",         # Security problems.
@@ -39,6 +38,9 @@ enable = [
     "tparallel",     # Detects inappropriate usage of t.Parallel() method in tests.
     "unused",        # If there are unused constants, variables, functions and types.
     "usestdlibvars", # Detects the possibility to use variables/constants from the Go standard library.
+
+    # "iface",       # Incorrect use of interfaces.
+    # In fact, can flag used interface as unsued (--fix will delete that interface!).
 ]
 
 # https://golangci-lint.run/docs/linters/configuration/#errcheck

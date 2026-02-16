@@ -9,5 +9,6 @@ func main() {
 	defer shutdown_cleanup.ExecuteStack()
 
 	databases.MigrateUp()
-	// databases.MigrateDownOne()
+	// databases.MigrateDownTo(0)
+	// databases.GenerateMigrationScript("Create table snapshots")
 }

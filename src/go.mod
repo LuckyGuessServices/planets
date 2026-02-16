@@ -4,6 +4,7 @@ go 1.26
 
 require (
 	github.com/DATA-DOG/go-txdb v0.2.1
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/gofrs/flock v0.13.0
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v5 v5.8.0

@@ -7,26 +7,6 @@
 
 ## MVP
 
-1. - [ ] Store planet's data in a local database.
-    1. - [x] Make a sort of setup:
-        * Add a wrapper to set pointers in one line:
-
-          ```
-          func Ptr[Type any](value Type) *Type {
-              return &value
-          }
-          ```
-        * Disable `pgx` automatic prepared statements (if ORM uses `pgx` driver and suffers from this feature).
-          See https://github.com/jackc/pgx/wiki/Automatic-Prepared-Statement-Caching
-    1. - [ ] Add an entity holding a planet's data - a table (migration) and ORM-like code ("repository" and a record).
-    1. - [ ] Imagine ORM replacement. Separate business logic from data mapping and database-related operations.
-    1. - [ ] Ensure all methods require a context (like `http.Request.Context`), which is eventually passed to
-         db-related functions: if a client's request is terminated prematurely, the database discards unnecessary work.
-    1. - [ ] (optionally) Cover with tests:
-        * Business layer is capable to invoke hidden (from it) database operations (CRUD).
-        * Database is always rolled back between tests (make tests with db operations that would conflict otherwise).
-        * (very optionally; not needed in this project for now)
-          UPDATE queries affect only actually updated fields (including `updated_at`).
 1. - [ ] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
     1. - [ ] Implement a method for the only endpoint `/` and its optional parameter `date`
          (but consider it as a mandatory parameter).
@@ -41,7 +21,7 @@
         * Request parameters:
             * date: `YYYYMMDD` or any automatically recognizable format
         * Response:
-            * array of objects, each: (int) planet_id => (bool) is_retrograde
+            * array of objects, each: (int) planet_index => (bool) is_retrograde
     1. - [ ] Try retrieving data from the local database. If there is no data locally, request the external API,
          store the data locally and then return the data.
     1. - [ ] Consider edge cases:
@@ -77,6 +57,7 @@
      Or implement it as a single API server in another microservice.
 1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
     1. - [ ] Implement logging levels.
+    1. - [ ] Log milli- or nanoseconds.
     1. - [ ] Add an option to additionally or exclusively log to files.
 1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
 1. - [ ] Make it possible for `databases.Core()` to return `pgxpool.Pool` instead of `sql.DB`.

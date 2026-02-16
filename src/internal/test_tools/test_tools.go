@@ -44,7 +44,7 @@ func setUpPackage() {
 		// Do NOT open the actual pool between tests. Most tests are executed within a "synced bubble"
 		// ([synctest.Test]), and a db pool creation generates goroutines. If those goroutines are not created within
 		// a test "bubble", calling [synctest.Wait] will fail affected tests.
-		databases.ReplaceWritablePoolsWithTxDB()
+		databases.EnableTestPools()
 	})
 }
 
@@ -83,8 +83,7 @@ func setUpGlobal() {
 		}
 
 		recreateTestDatabase()
-		// TODO Uncomment when actual migrations are added.
-		// databases.MigrateUp()
+		databases.MigrateUp()
 
 		// Indicate the job should not be repeated:
 		if err := os.WriteFile(fileDonePath, []byte(time.Now().Format(time.RFC3339Nano)), 0o600); err != nil {

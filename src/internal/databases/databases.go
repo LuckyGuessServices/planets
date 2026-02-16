@@ -18,22 +18,30 @@ type dbPool struct {
 }
 
 var (
-	dbCore                       = &dbPool{}
-	dbCoreReadonly               = &dbPool{}
-	replaceWriteablePoolWithTxDB = false
+	dbCore              = &dbPool{}
+	dbCoreReadonly      = &dbPool{}
+	areTestPoolsEnabled = false
 )
 
 // Core returns the same core database connections pool. If the pool has not been already created,
 // then firstly creates it and stores in a local variable for future function calls.
 //
 // Normally, the pool is closed automatically during the application shutdown (see [shutdown_cleanup.Register]).
-// During tests, the pool is intended to be closed at the end of each test (see [ReplaceWritablePoolsWithTxDB]).
+// During tests, the pool is intended to be closed at the end of each test (see [EnableTestPools]).
 func Core() *bun.DB {
 	return coreInternal(dbCore, false)
 }
 
 // CoreReadonly works the same as [Core], except the returned pool is connected to a (presumably) read-only database.
+//
+// If test pools are enabled (see EnableTestPools), returns [Core] pool.
+// Each auto-test operates within a single transaction. If auto-tests invoke using different pools to write and
+// query data, the records added via a writable pool will not be seen via a read-only pool (different transactions).
 func CoreReadonly() *bun.DB {
+	if areTestPoolsEnabled {
+		return Core()
+	}
+
 	return coreInternal(dbCoreReadonly, true)
 }
 
@@ -48,7 +56,7 @@ func coreInternal(props *dbPool, isReadonly bool) *bun.DB {
 	dbConfig := NewDBPrimaryConfig()
 	// For now, there are the same connection settings for master and readonly slave databases.
 	// If needed in the future, these should be replaced with settings according to [isReadonly] value.
-	props.poolORM = OpenAndPingPrimaryORM(dbConfig, replaceWriteablePoolWithTxDB)
+	props.poolORM = OpenAndPingPrimaryORM(dbConfig, areTestPoolsEnabled)
 
 	var (
 		poolNameForLogs string
@@ -63,7 +71,7 @@ func coreInternal(props *dbPool, isReadonly bool) *bun.DB {
 	}
 
 	props.shutdownFuncId = "DB: close " + poolNameForLogs
-	if !replaceWriteablePoolWithTxDB && !shutdown_cleanup.IsRegistered(props.shutdownFuncId) {
+	if !areTestPoolsEnabled && !shutdown_cleanup.IsRegistered(props.shutdownFuncId) {
 		errRegister := shutdown_cleanup.Register(props.shutdownFuncId, func() {
 			wasOpened, err := poolCloseFunc()
 			if err != nil {
@@ -78,7 +86,7 @@ func coreInternal(props *dbPool, isReadonly bool) *bun.DB {
 			luglog.Panicf("[DB] Failed to register %s shutdown function: %v", poolNameForLogs, errRegister)
 		}
 	}
-	if !replaceWriteablePoolWithTxDB {
+	if !areTestPoolsEnabled {
 		luglog.Printf("[DB] %s is initialized: %s", poolNameForLogs, dbConfig.DSNForLogs())
 	}
 
@@ -112,7 +120,7 @@ func closeCoreInternal(props *dbPool) (bool, error) {
 	return true, errClose
 }
 
-// ReplaceWritablePoolsWithTxDB closes current "constant" db pools stored in unexported global variables and enables
+// EnableTestPools closes current "constant" db pools stored in unexported global variables and enables
 // future pools inits to open special db pools for tests on the next call.
 // Then [Core] and other "core db pool" related functions will return this special pool.
 //
@@ -130,13 +138,13 @@ func closeCoreInternal(props *dbPool) (bool, error) {
 //
 // 2. A concurrent request calls this function too. When both goroutines try to unregister a shutdown function, one of
 // goroutines will do it later and eventually produce a panic because of failing to unregister a function.
-func ReplaceWritablePoolsWithTxDB() {
+func EnableTestPools() {
 	env.PanicIfEnvNotTest()
 
-	if replaceWriteablePoolWithTxDB {
+	if areTestPoolsEnabled {
 		luglog.Panic("[DB] TxDB driver was requested already.")
 	}
-	replaceWriteablePoolWithTxDB = true
+	areTestPoolsEnabled = true
 
 	if dbCore.poolORM != nil {
 		closeFunc, errUnregister := shutdown_cleanup.Unregister(dbCore.shutdownFuncId)

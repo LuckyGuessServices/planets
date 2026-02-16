@@ -129,6 +129,26 @@
         * Requires its own logger setup to log SQL queries. Otherwise, requires creating a "session" to debug
           a query builder and output queries without actually making those.
         * Passing a context to a query requires more complex query building.
+1. - [x] Store planet's data in a local database.
+    1. - [x] Make a sort of setup:
+        * Add a wrapper to set pointers in one line:
+
+          ```
+          func Ptr[Type any](value Type) *Type {
+              return &value
+          }
+          ```
+        * Disable `pgx` automatic prepared statements (if ORM uses `pgx` driver and suffers from this feature).
+          See https://github.com/jackc/pgx/wiki/Automatic-Prepared-Statement-Caching
+    1. - [x] Add an entity holding a planet's data - a table (migration) and ORM-like code ("repository" and a record).
+    1. - [x] Imagine ORM replacement. Separate business logic from data mapping and database-related operations.
+    1. - [x] Ensure all methods require a context (like `http.Request.Context`), which is eventually passed to
+         db-related functions: if a client's request is terminated prematurely, the database discards unnecessary work.
+    1. - [x] (optionally) Cover with tests:
+    - [x] Business layer is capable to invoke hidden (from it) database operations (CRUD).
+    - [x] Database is always rolled back between tests (make tests with db operations that would conflict otherwise).
+    - [ ] (very optionally; not needed in this project for now)
+      UPDATE queries affect only actually updated fields (including `updated_at`).
 
 ## Misc
 
