@@ -13,12 +13,30 @@ type Date struct {
 	time.Time
 }
 
-func NewDate(rawTime time.Time) Date {
-	y, m, d := rawTime.Date()
+func parseDateTime(dateTimeString string) (time.Time, error) {
+	parsedTime, errParse := dateparse.ParseAny(dateTimeString, dateparse.PreferMonthFirst(false))
+	if errParse != nil {
+		return time.Time{}, errParse
+	}
+
+	return parsedTime, nil
+}
+
+func NewDate(inputTime time.Time) Date {
+	y, m, d := inputTime.Date()
 
 	return Date{
-		Time: time.Date(y, m, d, 0, 0, 0, 0, rawTime.Location()),
+		Time: time.Date(y, m, d, 0, 0, 0, 0, inputTime.Location()),
 	}
+}
+
+func NewDateParsed(dateTimeString string) (Date, error) {
+	parsedTime, errParse := parseDateTime(dateTimeString)
+	if errParse != nil {
+		return Date{}, errParse
+	}
+
+	return NewDate(parsedTime), nil
 }
 
 func (date Date) String() string {
@@ -51,7 +69,7 @@ func (date *Date) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	valueTime, errParse := dateparse.ParseAny(valueString, dateparse.PreferMonthFirst(true))
+	valueTime, errParse := parseDateTime(valueString)
 	if errParse != nil {
 		return errParse
 	}

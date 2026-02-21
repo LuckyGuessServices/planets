@@ -14,13 +14,15 @@ func TestMain(m *testing.M) {
 }
 
 // Tests no prepared statements are made via both master and readonly database pools.
+//
+// See DBPrimaryConfig.DSN
 func TestPGXDoesNotPrepareStatementsInsideDbPool(t *testing.T) {
 	tests := []struct {
 		name         string
 		isDBReadonly bool
 	}{
 		{name: "CORE", isDBReadonly: false},
-		{name: "CORE readonly", isDBReadonly: true},
+		{name: "CORE-readonly", isDBReadonly: true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

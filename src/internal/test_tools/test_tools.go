@@ -14,6 +14,7 @@ import (
 	"github.com/LuckyGuessServices/planets/internal/env"
 	"github.com/LuckyGuessServices/planets/internal/general"
 	"github.com/LuckyGuessServices/planets/internal/luglog"
+	pathsgeneral "github.com/LuckyGuessServices/planets/internal/paths/general"
 	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
 	"github.com/gofrs/flock"
 )
@@ -191,7 +192,14 @@ func RunInSyncBubble(t *testing.T, testFunction func(t *testing.T)) {
 			}
 
 			if panicVal := recover(); panicVal != nil {
-				t.Fatal("Test general failure due to panic:", panicVal)
+				panicPackage, panicFile := pathsgeneral.PanicSource()
+				panicString := fmt.Sprintf(
+					"%#v; paniced function: %s\npanicked path: %s",
+					panicVal,
+					panicPackage,
+					panicFile,
+				)
+				t.Fatal("Test general failure due to panic:", panicString)
 			}
 		}()
 

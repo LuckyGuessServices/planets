@@ -149,6 +149,14 @@
     - [x] Database is always rolled back between tests (make tests with db operations that would conflict otherwise).
     - [ ] (very optionally; not needed in this project for now)
       UPDATE queries affect only actually updated fields (including `updated_at`).
+1. - [x] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
+    1. - [x] Implement a method for the only endpoint `/` and its optional parameter `date`
+         (but consider it as a mandatory parameter).
+    1. - [x] Cover with _mock_ autotests:
+        * 200, expected response
+        * 200, unexpected response (alert about even safe changes like a single extra field)
+        * 4xx/5xx responses
+        * no response / time-out
 
 ## Misc
 

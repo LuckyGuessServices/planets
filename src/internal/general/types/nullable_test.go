@@ -10,11 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMain(m *testing.M) {
-	test_tools.RunTestMain(m)
-}
-
-// TestMarshallingNullable tests types.Nullable JSON processing.
+// Tests types.Nullable JSON processing.
+//
+// See Nullable.MarshalJSON, Nullable.UnmarshalJSON
 func TestMarshallingNullable(t *testing.T) {
 	tests := []struct {
 		name                string

@@ -11,7 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestIndex tests a typical request and response.
+// Tests a typical request and response.
+//
+// See endpoints.Index
 func TestIndex(t *testing.T) {
 	test_tools.RunInSyncBubble(t, func(t *testing.T) {
 		response := helper.QueryApi(t, "GET", "/")
@@ -26,7 +28,9 @@ func TestIndex(t *testing.T) {
 	})
 }
 
-// TestIndexNoSlash Tests a special case for the "index" route, when URI lacks a trailing slash.
+// Tests a special case for the "index" route, when URI lacks a trailing slash.
+//
+// See endpoints.Index
 func TestIndexNoSlashRedirect(t *testing.T) {
 	test_tools.RunInSyncBubble(t, func(t *testing.T) {
 		response := helper.QueryApi(t, "GET", "")

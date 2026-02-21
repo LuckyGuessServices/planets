@@ -7,15 +7,6 @@
 
 ## MVP
 
-1. - [ ] Add `mercuryretrogradeapi.com` API client. See [docs](https://mercuryretrogradeapi.com/about.html).
-    1. - [ ] Implement a method for the only endpoint `/` and its optional parameter `date`
-         (but consider it as a mandatory parameter).
-    1. - [ ] Cover with _mock_ autotests:
-        * 200, expected response
-        * 200, unexpected response (alert about even safe changes like a single extra field)
-        * 4xx/5xx responses
-        * no response / time-out
-    1. - [ ] (optionally) Add _manually launched_ real autotests (maybe as a separate "application").
 1. - [ ] Add `on-date` GET endpoint. Utilize the local database model and the API client created on the previous steps.
     1. - [ ] Definition:
         * Request parameters:
@@ -59,6 +50,8 @@
     1. - [ ] Implement logging levels.
     1. - [ ] Log milli- or nanoseconds.
     1. - [ ] Add an option to additionally or exclusively log to files.
+1. - [ ] Add own Logger to `mercury`: log each request (URL + query), response (status code, limited body).
+    * Optionally, prepare a more universal solution (for any API client) located in `integration` package.
 1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
 1. - [ ] Make it possible for `databases.Core()` to return `pgxpool.Pool` instead of `sql.DB`.
      But it should work with `DATA-DOG/go-txdb` as well (e.g. via a common interface).
@@ -67,3 +60,4 @@
      (as a return type hint). Otherwise, replace `DATA-DOG/go-txdb` with your own implementation based on `pgxpool`
      (see [this post](https://github.com/jackc/pgx/issues/697#issuecomment-604035545)).
 1. - [ ] Cover [API](../src/internal/api) general functions (and edge cases with errors) with tests.
+1. - [ ] `mercury` API: add _manually launched_ real autotests (maybe as a separate "application").
