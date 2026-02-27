@@ -11,7 +11,7 @@ func SnapshotRepository() snapshot.RepositoryInterface {
 		return repository
 	}
 
-	repository = &SnapshotsBunRepository{}
+	repository = (&SnapshotsBunRepository{}).Init()
 
 	return repository
 }

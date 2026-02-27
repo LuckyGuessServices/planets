@@ -41,19 +41,25 @@ func TestDateCreationFromString(t *testing.T) {
 	expectedTime := time.Date(2026, time.February, 3, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name       string
-		dateString string
+		name          string
+		dateString    string
+		hasParseError bool
 	}{
-		{name: "RFC3339", dateString: "2026-02-03T17:25:00Z"},
-		{name: "Little-Endian", dateString: "03/02/2026"},
-		// Unfortunately, the underlying library is pretty bad at reading really different formats.
+		{name: "RFC3339", dateString: "2026-02-03T17:25:00Z", hasParseError: false},
+		{name: "date-only", dateString: "2026-02-03", hasParseError: false},
+		{name: "Little-Endian", dateString: "03/02/2026", hasParseError: true}, // Ambiguous format.
+		{name: "Middle-Endian", dateString: "02/03/2026", hasParseError: true}, // Ambiguous format.
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			test_tools.RunInSyncBubble(t, func(t *testing.T) {
 				parsedDate, errTimeParse := types.NewDateParsed(test.dateString)
-				require.NoError(t, errTimeParse)
-				assert.Equal(t, expectedTime, parsedDate.Time)
+				if test.hasParseError {
+					assert.Error(t, errTimeParse)
+				} else {
+					require.NoError(t, errTimeParse)
+					assert.Equal(t, expectedTime, parsedDate.Time)
+				}
 			})
 		})
 	}

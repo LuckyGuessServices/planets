@@ -16,15 +16,16 @@ import (
 // See endpoints.Index
 func TestIndex(t *testing.T) {
 	test_tools.RunInSyncBubble(t, func(t *testing.T) {
-		response := helper.QueryApi(t, "GET", "/")
+		response := helper.QueryApiGet(t, "/", nil).Result()
+		defer func() { _ = response.Body.Close() }()
 
-		assert.Equal(t, http.StatusOK, response.Code)
+		assert.Equal(t, http.StatusOK, response.StatusCode)
 
 		bodyExpected := map[string]any{
 			"service_name":         "lug-planets",
 			"service_current_time": "2000-01-01T00:00:00Z",
 		}
-		helper.RequireJSONResponse(t, bodyExpected, response.Body)
+		helper.RequireJSONResponse(t, bodyExpected, helper.ExtractAndCloseResponseBody(t, response))
 	})
 }
 
@@ -33,13 +34,14 @@ func TestIndex(t *testing.T) {
 // See endpoints.Index
 func TestIndexNoSlashRedirect(t *testing.T) {
 	test_tools.RunInSyncBubble(t, func(t *testing.T) {
-		response := helper.QueryApi(t, "GET", "")
+		response := helper.QueryApiGet(t, "", nil).Result()
+		defer func() { _ = response.Body.Close() }()
 
-		assert.Equal(t, http.StatusTemporaryRedirect, response.Code)
+		assert.Equal(t, http.StatusTemporaryRedirect, response.StatusCode)
 		assert.Equal(
 			t,
 			fmt.Sprintf("<a href=\"%s/\">Temporary Redirect</a>.\n\n", router.PrefixGeneral),
-			response.Body.String(),
+			string(helper.ExtractAndCloseResponseBody(t, response)),
 		)
 	})
 }

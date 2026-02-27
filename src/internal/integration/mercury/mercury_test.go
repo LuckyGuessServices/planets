@@ -10,28 +10,65 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/LuckyGuessServices/planets/internal/general/types"
 	"github.com/LuckyGuessServices/planets/internal/integration"
 	"github.com/LuckyGuessServices/planets/internal/integration/mercury"
-	"github.com/LuckyGuessServices/planets/internal/luglog"
 	"github.com/LuckyGuessServices/planets/internal/test_tools"
+	"github.com/LuckyGuessServices/planets/internal/test_tools/helper"
 	"github.com/LuckyGuessServices/planets/internal/test_tools/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var requestedDate types.Date
-
-func init() {
-	var errParse error
-	requestedDate, errParse = types.NewDateParsed("2025-11-10")
-	if errParse != nil {
-		luglog.Panic("Failed to init 'requestedDate': ", errParse)
-	}
-}
+var requestedDate = helper.NewDateParsedOrPanic("2025-11-10")
 
 func TestMain(m *testing.M) {
 	test_tools.RunTestMain(m)
+}
+
+// Tests the default API client transport in case a transport mock is not set.
+//
+// See mercury.Client, mercury.SetMockClientForTests
+func TestClientMock(t *testing.T) {
+	tests := []struct {
+		name           string
+		isClientMocked bool
+	}{
+		{name: "mocked", isClientMocked: true},
+		{name: "default", isClientMocked: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			test_tools.RunInSyncBubble(t, func(t *testing.T) {
+				if test.isClientMocked {
+					transport := mock.NewTransport()
+					transport.RoundTripFunction = func(_ *http.Request) (*http.Response, error) {
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Body:       io.NopCloser(strings.NewReader(`{"is_retrograde":true}`)),
+							Header:     make(http.Header),
+						}, nil
+					}
+					mercury.SetMockClientForTests("", transport)
+				}
+
+				// Here any method might be used. The point is to distinguish a mocked answer from a not mocked one.
+				returnedValue, requestError := mercury.Client().ByDate(context.Background(), requestedDate)
+				if test.isClientMocked {
+					require.NoError(t, requestError)
+					assert.True(t, returnedValue)
+				} else {
+					require.Error(t, requestError)
+					assert.Equal(
+						t,
+						`unexpected response status code: 500; raw response body (within quotes): `+
+							`'An API client must be mocked in "app_test" environment. `+
+							`Init a mock client instance with "SetMockClientForTests".'`,
+						requestError.Error(),
+					)
+				}
+			})
+		})
+	}
 }
 
 // Asserts successful responses.
@@ -39,7 +76,6 @@ func TestMain(m *testing.M) {
 // See APIClient.ByDate
 func TestByDateSuccess(t *testing.T) {
 	transport := mock.NewTransport()
-	mercury.SetMockClientForTests("", transport)
 
 	tests := []struct {
 		name          string
@@ -52,6 +88,8 @@ func TestByDateSuccess(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			test_tools.RunInSyncBubble(t, func(t *testing.T) {
+				mercury.SetMockClientForTests("", transport)
+
 				mockResponseBody := fmt.Sprintf(`{"junk_data":"junk","is_retrograde":%s}`, test.mockValue)
 				transport.RoundTripFunction = func(_ *http.Request) (*http.Response, error) {
 					return &http.Response{
@@ -173,6 +211,8 @@ func TestByDateInvalidResponseBody(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			test_tools.RunInSyncBubble(t, func(t *testing.T) {
+				mercury.SetMockClientForTests("", transport)
+
 				transport.RoundTripFunction = func(_ *http.Request) (*http.Response, error) {
 					return &http.Response{
 						StatusCode: http.StatusOK,

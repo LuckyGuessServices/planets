@@ -14,7 +14,9 @@ type Date struct {
 }
 
 func parseDateTime(dateTimeString string) (time.Time, error) {
-	parsedTime, errParse := dateparse.ParseAny(dateTimeString, dateparse.PreferMonthFirst(false))
+	// Unfortunately, the underlying library is pretty bad at reading really different formats.
+	// It even can't apply its options properly... So let's parse strictly:
+	parsedTime, errParse := dateparse.ParseStrict(dateTimeString)
 	if errParse != nil {
 		return time.Time{}, errParse
 	}

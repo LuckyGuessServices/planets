@@ -61,14 +61,16 @@ var (
 type brokenTransport struct{}
 
 func (transport *brokenTransport) RoundTrip(_ *http.Request) (*http.Response, error) {
+	errorMessage := fmt.Sprintf(
+		`An API client must be mocked in "%s" environment. Init a mock client instance with "%s".`,
+		env.Config().ApplicationEnvironment(),
+		"SetMockClientForTests",
+	)
+
 	return &http.Response{
 		StatusCode: http.StatusInternalServerError,
-		Body: io.NopCloser(strings.NewReader(fmt.Sprintf(
-			"In '%s' environment an API client must be mocked. Call '%s' function to init a mock client instance.",
-			env.Config().ApplicationEnvironment(),
-			"SetMockClientForTests",
-		))),
-		Header: make(http.Header),
+		Body:       io.NopCloser(strings.NewReader(errorMessage)),
+		Header:     make(http.Header),
 	}, nil
 }
 
@@ -85,6 +87,19 @@ func SetMockClientForTests(baseURL string, transport http.RoundTripper) {
 	env.PanicIfEnvNotTest()
 
 	apiClient = newClient(baseURL, transport)
+}
+
+// UnsetClientForTests clears current internal client instance.
+//
+// Always call it as a deferred function inside tests. This way you ensure the next test will not reuse
+// the same client with the same mocked transport.
+func UnsetClientForTests() {
+	apiClientMutex.Lock()
+	defer apiClientMutex.Unlock()
+
+	env.PanicIfEnvNotTest()
+
+	apiClient = nil
 }
 
 // Client consequently returns the same API client instance initialized during the first function call.
@@ -109,7 +124,7 @@ func Client() *APIClient {
 
 func (client *APIClient) ByDate(ctx context.Context, date types.Date) (isRetrograde bool, processingError error) {
 	const requestPath string = "/"
-	requestURLParameters := url.Values{}
+	requestURLParameters := &url.Values{}
 	requestURLParameters.Set("date", date.String())
 
 	response, processingError := client.makeGetRequest(ctx, requestPath, requestURLParameters)
@@ -157,7 +172,7 @@ func (client *APIClient) ByDate(ctx context.Context, date types.Date) (isRetrogr
 func (client *APIClient) makeGetRequest(
 	ctx context.Context,
 	endpointPath string,
-	queryParameters url.Values,
+	queryParameters *url.Values,
 ) (response *http.Response, requestError error) {
 	requestURL, requestError := url.Parse(client.baseURL)
 	if requestError != nil {

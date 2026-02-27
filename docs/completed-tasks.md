@@ -157,6 +157,18 @@
         * 200, unexpected response (alert about even safe changes like a single extra field)
         * 4xx/5xx responses
         * no response / time-out
+1. - [x] Add `on-date` GET endpoint. Utilize the local database model and the API client created on the previous steps.
+    1. - [x] Definition:
+        * Request parameters:
+            * date: `YYYY-MM-DD`
+        * Response:
+            * array of objects, each: (int) planet_index => (bool) is_retrograde
+    1. - [x] Try retrieving data from the local database. If there is no data locally, request the external API,
+         store the data locally and then (with a subsequent request) return the data (if successful) or an error.
+    1. - [x] Cover `on-date` endpoint with autotests:
+        * Typical success.
+        * Invalid parameters.
+        * Data gathered from local storage (if stored) or external API (plus storing locally) or no data available.
 
 ## Misc
 

@@ -9,7 +9,15 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type SnapshotsBunRepository struct{}
+type SnapshotsBunRepository struct {
+	snapshot.RepositoryCommons
+}
+
+func (repo *SnapshotsBunRepository) Init() *SnapshotsBunRepository {
+	repo.RepositoryInterface = repo
+
+	return repo
+}
 
 func (repo *SnapshotsBunRepository) NewSnapshot() *snapshot.Snapshot {
 	return &snapshot.Snapshot{EntityInterface: &SnapshotBun{}}

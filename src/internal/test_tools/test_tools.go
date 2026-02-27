@@ -13,6 +13,7 @@ import (
 	"github.com/LuckyGuessServices/planets/internal/databases"
 	"github.com/LuckyGuessServices/planets/internal/env"
 	"github.com/LuckyGuessServices/planets/internal/general"
+	"github.com/LuckyGuessServices/planets/internal/integration/mercury"
 	"github.com/LuckyGuessServices/planets/internal/luglog"
 	pathsgeneral "github.com/LuckyGuessServices/planets/internal/paths/general"
 	"github.com/LuckyGuessServices/planets/internal/shutdown_cleanup"
@@ -183,13 +184,15 @@ func RunInSyncBubble(t *testing.T, testFunction func(t *testing.T)) {
 		defer func() {
 			t.Helper()
 
+			// Ensure to unset a mocked API client (if present).
+			mercury.UnsetClientForTests()
+
+			// Close the database pool:
 			if _, err := databases.CloseCore(); err != nil {
 				luglog.Panic("[DB] Failed to close CORE(TxDB) pool: ", err)
 			}
-			// We should close even a readonly pool because of sync bubble.
-			if _, err := databases.CloseCoreReadonly(); err != nil {
-				luglog.Panic("[DB] Failed to close CORE(TxDB) readonly pool: ", err)
-			}
+			// No need to close readonly pool - in tests it is replaced with the same "master" writeable pool.
+			// Otherwise, each such test launched within this helper will just fail.
 
 			if panicVal := recover(); panicVal != nil {
 				panicPackage, panicFile := pathsgeneral.PanicSource()

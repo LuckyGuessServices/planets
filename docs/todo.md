@@ -1,51 +1,32 @@
 
 # TODO
 
-- [MVP](#mvp)
-- [Future development](#future-development)
+- [Baseline](#baseline)
 - [Unscheduled optional tasks](#unscheduled-optional-tasks)
 
-## MVP
+## Baseline
 
-1. - [ ] Add `on-date` GET endpoint. Utilize the local database model and the API client created on the previous steps.
-    1. - [ ] Definition:
-        * Request parameters:
-            * date: `YYYYMMDD` or any automatically recognizable format
-        * Response:
-            * array of objects, each: (int) planet_index => (bool) is_retrograde
-    1. - [ ] Try retrieving data from the local database. If there is no data locally, request the external API,
-         store the data locally and then return the data.
-    1. - [ ] Consider edge cases:
-        * Invalid date.
-        * No data.
-        * External APIs are unavailable (no response or time out).
-    1. - [ ] Cover `on-date` endpoint with autotests.
-        1. - [ ] Mock external API(s).
-        1. - [ ] Try to explicitly forbid external connections - if you add a new external API and forget to update
-             autotests, the latter will fail while trying to request an external IP.
-        1. - [ ] Cover cases:
-            * Typical success.
-            * Invalid parameters.
-            * Data gathered from local storage (if stored) or external API (plus storing locally) or no data available.
-
-## Future development
-
+1. - [ ] Add a lint check to ensure every test package contains a standardized TestMain call.
+1. - [ ] Add a queue manager / message broker / etc. to request external API(s) in background.
+     - [ ] Until data is received, API server should return something like "please, try again later" responses
+     (in a way that is easy enough to automate retries).
+1. - [ ] Add caching for API requests (full or granular).
 1. - [ ] Add versions to API like `/api/vX.Y`
 1. - [ ] Document the service's REST API with OpenAPI.
 1. - [ ] Document API error codes.
-1. - [ ] Add a queue manager / message broker / etc. to request external API(s) in background.
-
-    Until data is received, API server should return something like "please, try again later" responses
-    (in a way that is easy enough to automate retries).
-1. - [ ] Add caching for API requests (full or granular).
 
 ## Unscheduled optional tasks
 
-1. - [ ] Add a lint check to ensure every test package contains a standardized TestMain call.
 1. - [ ] Alter mocked time for all tests:
      "a second later" sleep should produce cases of a leap second and / or an extra hour (winter/summer).
-1. - [ ] Add gRPC (https://grpc.io/) as a second API (with the same functionality; just for education)
-     Or implement it as a single API server in another microservice.
+1. - [ ] Try replacing mercury API with own retrograde state calculation.
+1. - [ ] Try to forbid external connections automatically (until allowed explicitly): if you add a new external
+     API and forget to update autotests, the latter will fail while trying to request an external IP.
+1. - [ ] Add another external source: https://freeastrologyapi.com/api-reference/planets
+    * Advantage: retrograde state (and some other parameters) for all Sol planets.
+    * Caveat: a free token limits to 50 requests per day.
+1. - [ ] Add gRPC (https://grpc.io/) API as a replacement for REST API
+     (with the same functionality; just for education).
 1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
     1. - [ ] Implement logging levels.
     1. - [ ] Log milli- or nanoseconds.
@@ -53,6 +34,7 @@
 1. - [ ] Add own Logger to `mercury`: log each request (URL + query), response (status code, limited body).
     * Optionally, prepare a more universal solution (for any API client) located in `integration` package.
 1. - [ ] Add own Logger to `goose`: implement `goose.Logger` and apply it to `goose.SetLogger()`.
+1. - [ ] (with a high-load generator service) Add metrics. 
 1. - [ ] Make it possible for `databases.Core()` to return `pgxpool.Pool` instead of `sql.DB`.
      But it should work with `DATA-DOG/go-txdb` as well (e.g. via a common interface).
 
