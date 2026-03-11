@@ -6,14 +6,20 @@
 
 ## Baseline
 
-1. - [ ] Add a lint check to ensure every test package contains a standardized TestMain call.
 1. - [ ] Add a queue manager / message broker / etc. to request external API(s) in background.
-     - [ ] Until data is received, API server should return something like "please, try again later" responses
-     (in a way that is easy enough to automate retries).
+    - [ ] Until data is received, API server should detect the planned data retrieval task and return "Retry-After".
+    - [ ] Integrational testing: auto-tests _must not_ substitute an actual message broker with an immediate internal
+      function call.
+        * A message broker must not process tasks automatically. Messages processing should be launched manually
+          within a test body.
 1. - [ ] Add caching for API requests (full or granular).
+1. - [ ] Add gRPC (https://grpc.io/) API as an alternative for REST API (with the same endpoints).
 1. - [ ] Add versions to API like `/api/vX.Y`
-1. - [ ] Document the service's REST API with OpenAPI.
-1. - [ ] Document API error codes.
+1. - [ ] Document the service's API.
+    1. - [ ] Decide on a documenting engine / approach.
+    1. - [ ] Cover all endpoints.
+    1. - [ ] Document API common "vocabularies": error codes, planet IDs, etc.
+1. - [ ] Add a lint check to ensure every test package contains a standardized TestMain call.
 
 ## Unscheduled optional tasks
 
@@ -25,8 +31,6 @@
 1. - [ ] Add another external source: https://freeastrologyapi.com/api-reference/planets
     * Advantage: retrograde state (and some other parameters) for all Sol planets.
     * Caveat: a free token limits to 50 requests per day.
-1. - [ ] Add gRPC (https://grpc.io/) API as a replacement for REST API
-     (with the same functionality; just for education).
 1. - [ ] Upgrade [luglog.go](../src/internal/luglog/luglog.go) calls:
     1. - [ ] Implement logging levels.
     1. - [ ] Log milli- or nanoseconds.
